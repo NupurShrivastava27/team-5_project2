@@ -153,17 +153,20 @@ statistics computed do not include any possible illegal values, and better
 handle missing data, e.g., by using a previous year's data or a rolling average
 of previous years' data as a proxy.
 ;
- PROC MEANS 
-    DATA=grads MEAN;
+proc means 
+    data=grads mean;
     by COUNTY;
-    VAR TOTAL;
+    var TOTAL;
 run;
-proc sort data=grads out=sortedgrads;; 
-    by TOTAL 
-        descending;
- run;
-proc print data=sortedgrads;
-    var COUNTY TOTAL;
+proc sort 
+    data=grads 
+    out=sortedgrads;; 
+    by TOTAL descending;
+run;
+proc print 
+    data=sortedgrads;
+    var COUNTY 
+        TOTAL;
 run;
 title;
 footnote;
