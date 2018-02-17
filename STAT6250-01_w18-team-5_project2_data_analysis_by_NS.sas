@@ -5,9 +5,10 @@
 
 *
 This file uses the following analytic dataset to address several research
-questions regarding college-preparation trends at CA public high schools
-Dataset Name: cde_2014_analytic_file created in external file
-STAT6250-02_w18-team-5_project2_data_preparation.sas, which is assumed to be
+questions regarding high school enrollments and dropouts and graduations trends
+at California pubilc high schools by race, gender and schoo (AY2014-2015-2016).
+Dataset Name: grad_drop_merged_sorted created in external file
+STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
 See included file for dataset properties
 ;
@@ -28,7 +29,7 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What is the number of total enrollments Vs dropouts of high students of each grades in 2014-2015-2016?'
+'Research Question: What is the number of total enrollments vs dropouts high school students for each grades in 2014-2015-2016?'
 ;
 
 title2
@@ -40,29 +41,30 @@ footnote1
 ;
 
 footnote2
-'Moreover, we can see clear comparison between AY2014-2015, suggesting to know the reasons behind high rate of dropouts after enrollments.'
+'Moreover, we can see clear comparison between AY2014-2016, suggesting to know the reasons behind high rate of dropouts after enrollments.'
 ;
 
 *
-Note: This compares the column "E9, E10, E11, E12, D9, D10, D11, D12" from 
-dropouts1415 to the column of the same columns names from dropouts1516.
-Methodology: When combining dropouts1415 with dropouts1516 during data 
-preparation, use sum in proc print to produce the totals of grade 9th to 12th 
-for 2014 and 2015, using column E9 to E12 and print in the temporary dataset
-created in the corresponding data-prep file. Finally, ploted a graph out of it.
+Note: This compares these columns "E9, E10, E11, E12, D9, D10, D11, D12" from 
+dropouts1415 to the same column names from dropouts1516.
+Methodology: After combining all datasets during data preparation, use sum in 
+proc print to produce the totals of grade 9th to 12th for 2014 and 2015, 
+using column E9 to E12 and print in the temporary dataset created in the 
+corresponding data-prep file. Finally, ploted a graph out of it.
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 Possible Follow-up Steps: Need to bring the table in bar/stack graph to be 
 more presentable.
 ;
 
-data dropouts;
-    set dropouts1415;
+data grad_drop;
+    set grad_drop_merged_sorted;
 run; 
-proc print data = dropouts; 
+proc print 
+    data = grad_drop; 
     sum E9 E10 E11 E12;
     sum D9 D10 D11 D12;    
-    where CDC_Code ne ' ';
+    where CDS_CODE ne ' ';
 run; 
 title;
 footnote;
@@ -73,19 +75,19 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What is the rate of genders (male vs female) in both enrollments and dropouts (2014-2015-2016)?'
+'Research Question: What is the rate of genders (male vs female) in both enrollments and dropouts (2014-15-2016)?'
 ;
 
 title2
-'Rationale: This would help inform which gender has contributed most in enrollments and dropouts for the year 2014-15-2016.'
+'Rationale: This would help inform which gender has contributed most enrollments and dropouts (2014-15-2016).'
 ;
 
 footnote1
-'As can be seen, there was an extremely high rate of femal dropouts AY2014-15'
+'As can be seen, there was an extremely high rate of female dropouts AY2014-15.'
 ;
 
 footnote2
-'Explanations in graph possinbly shows the increase and decrease of female dropouts out of enrollmets AY 2014-2015-2016.'
+'Explanations in graph possibly shows the increase and decrease of female dropouts out of enrollments AY 2014-2015-2016.'
 ;
 
 *
@@ -99,13 +101,14 @@ data, nor does it attempt to validate data in any ways.
 Followup Steps: A possible follow-up to this approach could use an inferential
 statistical technique like linear regression.
 ;
-
+ 
 proc sort 
-    data=dropouts1415;
+    data=grad_drop_merged_sorted
+    out=grad_drop_sorted;
     by gender;
 run; 
 proc print 
-    data = dropouts1415;
+    data = grad_drop_sorted;
     sum ETOT DTOT;
     where location ne ' ';
     by gender;
@@ -119,7 +122,7 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: List least 10 Counties attained lowest mean in graduations 2014-2015 Vs 2015-2016?'
+'Research Question: List least 10 Counties attained lowest mean in graduations AY2014-2015-2016?'
 ;
 
 title2
@@ -141,10 +144,9 @@ footnote3
 *
 Note: This compares the column Total from grads1415 to the column TOTAL from
 grads1516.
-Methodology: When combining grads1415 and grads1516 during data preparation,  
-Then, use proc mean by counties and then use proc sort to sort the dataset in 
-decending order and finally, print here to display the first 10 rows of the 
-sorted dataset.
+Methodology: After combining grads1415 and grads1516 during data preparation,  
+use proc mean by counties and then use proc sort to sort the dataset in 
+decending order and finally, print here to display  10 observations. 
 Limitations: This methodology does not account for schools with missing data,
 nor does it attempt to validate data in any way, like filtering for values
 outside of admissable values.
@@ -154,18 +156,18 @@ handle missing data, e.g., by using a previous year's data or a rolling average
 of previous years' data as a proxy.
 ;
 proc means 
-    data=grads mean;
+    data=grad_drop_merged_sorted mean;
+    out=grad_drop_sorted;
     by COUNTY;
     var TOTAL;
 run;
 proc sort 
-    data=grads 
-    out=sortedgrads;; 
+    data=grad_drop_sorted;    
     by TOTAL descending;
 run;
 proc print 
-    data=sortedgrads;
-    var COUNTY 
+    data=grad_drop_sorted;
+    var COUNTY
         TOTAL;
 run;
 title;
