@@ -167,3 +167,81 @@ https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/dropouts1516.xls?r
     &inputDataset4URL.,
     &inputDataset4Type.
 )
+
+
+* sort and check raw data sets for duplicates with respect to primary keys,
+  data contains no blank rows so no steps to remove blanks is needed;
+
+proc sort
+        nodupkey
+        data=grad1415_raw
+        out=grad1415_raw_sorted(where=(not(missing(CDS_CODE))))
+    ;
+    by
+        CDS_CODE
+    ;
+run;
+proc sort
+        nodupkey
+        data=grad1516_raw
+        out=grad1516_raw_sorted(where=(not(missing(CDS_CODE))))
+    ;
+    by
+        CDS_CODE
+    ;
+run;
+proc sort
+        nodupkey
+        data=dropouts1415_raw
+        out=dropouts1415_raw_sorted(where=(not(missing(CDS_CODE))))
+    ;
+    by
+        CDS_CODE
+        ETHNIC
+        descending GENDER
+    ;
+run;
+proc sort
+        nodupkey
+        data=dropouts1516_raw
+        out=dropouts1516_raw_sorted(where=(not(missing(CDS_CODE))))
+    ;
+    by
+        CDS_CODE
+        ETHNIC
+        descending GENDER
+    ;
+run;
+
+
+* combine data sets horizontally;
+data all1415;
+    merge
+        dropouts1415_raw_sorted
+        grad1415_raw_sorted;
+    by CDS_CODE;
+run;
+data all1516;
+    merge
+        dropouts1516_raw_sorted
+        grad1516_raw_sorted;
+    by CDS_CODE;
+run;
+
+* combine data sets vertically;
+data grad_drop_merged;
+    set all1415 all1516;
+run;
+
+proc sort
+        nodupkey
+        data=grad_drop_merged
+        out=grad_drop_merged_sorted(where=(not(missing(CDS_CODE))))
+    ;
+    by
+        YEAR
+        CDS_CODE
+        ETHNIC
+        descending GENDER
+    ;
+run;
