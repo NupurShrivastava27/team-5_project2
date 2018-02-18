@@ -94,25 +94,25 @@ key that uniquely identifies groups by school, ethnic background, and gender.
 * setup environmental parameters;
 
 %let inputDataset1URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/grad1415.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/grad1415.xls?raw=true
 ;
 %let inputDataset1Type = xls;
 %let inputDataset1DSN = grad1415_raw;
 
 %let inputDataset2URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/grad1516.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/grad1516.xls?raw=true
 ;
 %let inputDataset2Type = xls;
 %let inputDataset2DSN = grad1516_raw;
 
 %let inputDataset3URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/dropouts1415.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/dropouts1415.xls?raw=true
 ;
 %let inputDataset3Type = xls;
 %let inputDataset3DSN = dropouts1415_raw;
 
 %let inputDataset4URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/dropouts1516.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/dropouts1516.xls?raw=true
 ;
 %let inputDataset4Type = xls;
 %let inputDataset4DSN = dropouts1516_raw;
