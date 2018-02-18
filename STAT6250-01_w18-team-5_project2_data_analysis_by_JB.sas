@@ -212,9 +212,113 @@ footnote;
 
 
 title1
-'Research Question: Within the counties with a high increase in the ratio of dropouts to enrollments year over year, what are the proportions of the ethnic backgrounds of students who graduated compared to students who dropped out?'
+'Research Question: Within the counties with a high increase in the ratio of dropouts to enrollments year over year, what are the proportions of the ethnic backgrounds of students who graduated compared to students who dropped out in the 2015-2016 academic year?'
 ;
 
 title2
 'Rationale: We may be able to identify evidence of the achievement gap by determining if the ratio of ethnic backgrounds of students who dropped out is significantly different from that of those who graduated.'
 ;
+
+footnote1
+''
+;
+
+*
+Methodology: Create a new data set from our original data set which only
+includes the counties from the previous step and the 2015-2016 academic year.
+Then calculate the total enrollment and dropout rates for each ethnicity in
+these counties, and present the data in a reasonable format.
+
+Limitations: There is some ambiguity with the differences between the count of
+total graduates in each county, and the number of enrolled 12th grade students
+in each county minus the number of students who dropped out. It is possible that
+this is due to students who should have graduated were unable to do so, in which
+case it would appear that they had enrolled, but not graduated, and not dropped
+out. More investigation on this may be appropriate.
+
+Possible Follow-up Steps: Determine the most appropriate way to display this
+information in a way that explains the results for non-statisticians (i.e. pie
+chart, bar chart, some other format) and also resolve and interpret the
+discrepancy noted above.
+;
+proc sql;
+    create table JB2_data as
+    select *
+    from grad_drop_merged_sorted
+    where COUNTY
+    in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
+    and YEAR = 1516
+    ;
+quit;
+proc sql;
+
+proc means
+        noprint
+        sum
+        mode
+        data=JB2_data
+        nonobs
+    ;
+    var
+        E12
+        D12
+        TOTAL_sum
+    ;
+    class
+        COUNTY
+        ETHNIC
+    ;
+    output
+        out=JB2_means
+        sum(E12 D12) = E12_sum D12_sum
+        mode(TOTAL_sum) = TOTAL_mode
+    ;
+;
+run;
+
+proc print data=JB2_means;
+    var
+        COUNTY
+        ETHNIC
+        TOTAL_mode
+        D12_sum
+    ;
+    where _TYPE_ = 3;
+run;
+title;
+footnote;
+
+
+*******************************************************************************;
+* Research Question Analysis Starting Point;
+*******************************************************************************;
+
+
+title1
+'Research Question: Within counties with a high increase in the ratio of dropouts, at which grade levels do we see the greatest number of dropouts?'
+;
+
+title2
+'Rationale: If we can identify the point at which most students drop out, we may be able to put additional resources into student retention shortly before that point.'
+;
+
+footnote1
+''
+;
+
+*
+Methodology: Using the data set created at the start of the previous question,
+sum up the dropouts by grade level for each county, and display the total
+number of dropouts per grade level using a reasonable presentation method.
+
+Limitations: It might make more sense to display this as a ratio rather than as
+a raw number, and crosstab information using the ethnicity data from the
+previous step may help illuminate trends that are present.
+
+Possible Follow-up Steps: Determine the most effective way to communicate the
+results to a non-statistician audience, and add the data and sorting steps to
+the data prep file.
+;
+
+title;
+footnote;
