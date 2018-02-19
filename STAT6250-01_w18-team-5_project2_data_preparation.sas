@@ -94,25 +94,25 @@ key that uniquely identifies groups by school, ethnic background, and gender.
 * setup environmental parameters;
 
 %let inputDataset1URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/grad1415.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/grad1415.xls?raw=true
 ;
 %let inputDataset1Type = xls;
 %let inputDataset1DSN = grad1415_raw;
 
 %let inputDataset2URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/grad1516.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/grad1516.xls?raw=true
 ;
 %let inputDataset2Type = xls;
 %let inputDataset2DSN = grad1516_raw;
 
 %let inputDataset3URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/dropouts1415.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/dropouts1415.xls?raw=true
 ;
 %let inputDataset3Type = xls;
 %let inputDataset3DSN = dropouts1415_raw;
 
 %let inputDataset4URL =
-https://github.com/stat6250/team-5_project2/blob/JB-wip1/data/dropouts1516.xls?raw=true
+https://github.com/stat6250/team-5_project2/blob/master/data/dropouts1516.xls?raw=true
 ;
 %let inputDataset4Type = xls;
 %let inputDataset4DSN = dropouts1516_raw;
@@ -213,18 +213,75 @@ proc sort
     ;
 run;
 
+proc means
+        noprint
+        sum
+        data = grad1415_raw_sorted
+        nonobs
+    ;
+    var TOTAL
+    ;
+    by COUNTY
+    ;
+    output
+        out=grad1415_means
+        sum(TOTAL) = TOTAL_sum
+    ;
+run;
+
+proc sort data=grad1415_means out=grad1415_means_sorted;
+    by COUNTY;
+run;
+
+data grad1415_final;
+    merge
+        grad1415_raw_sorted
+        grad1415_means_sorted
+    ;
+    by COUNTY;
+run;
+
+proc means
+        noprint
+        sum
+        data = grad1516_raw_sorted
+        nonobs
+    ;
+    var TOTAL
+    ;
+    by COUNTY
+    ;
+    output
+        out=grad1516_means
+        sum(TOTAL) = TOTAL_sum
+    ;
+run;
+
+proc sort data=grad1516_means out=grad1516_means_sorted;
+    by COUNTY;
+run;
+
+data grad1516_final;
+    merge
+        grad1516_raw_sorted
+        grad1516_means_sorted
+    ;
+    by COUNTY;
+run;
+
 
 * combine data sets horizontally;
 data all1415;
     merge
         dropouts1415_raw_sorted
-        grad1415_raw_sorted;
+        grad1415_final;
     by CDS_CODE;
 run;
+
 data all1516;
     merge
         dropouts1516_raw_sorted
-        grad1516_raw_sorted;
+        grad1516_final;
     by CDS_CODE;
 run;
 
