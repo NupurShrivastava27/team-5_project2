@@ -269,22 +269,122 @@ proc means
         ETHNIC
     ;
     output
-        out=JB2_means
+        out=JB2_means1
         sum(E12 D12) = E12_sum D12_sum
         mode(TOTAL_sum) = TOTAL_mode
     ;
 ;
 run;
 
-proc print data=JB2_means;
-    var
-        COUNTY
-        ETHNIC
-        TOTAL_mode
-        D12_sum
+proc sql;
+    create table JB2_data2 as
+    select *
+    from grad_all
+    where COUNTY
+    in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
     ;
-    where _TYPE_ = 3;
+quit;
+
+proc means
+        noprint
+        sum
+        data=JB2_data2
+        nonobs
+    ;
+    var
+        NOT_REPORTED    /* Code 0 */
+        AM_IND          /* Code 1 */
+        ASIAN           /* Code 2 */
+        PAC_ISLD        /* Code 3 */
+        FILIPINO        /* Code 4 */
+        HISPANIC        /* Code 5 */
+        AFRICAN_AM      /* Code 6 */
+        WHITE           /* Code 7 */
+        TWO_MORE_RACES  /* Code 9 */
+        TOTAL
+    ;
+    class
+        YEAR
+        COUNTY
+    ;
+    output
+        out=JB2_means2
+        sum(
+            NOT_REPORTED    /* Code 0 */
+            AM_IND          /* Code 1 */
+            ASIAN           /* Code 2 */
+            PAC_ISLD        /* Code 3 */
+            FILIPINO        /* Code 4 */
+            HISPANIC        /* Code 5 */
+            AFRICAN_AM      /* Code 6 */
+            WHITE           /* Code 7 */
+            TWO_MORE_RACES  /* Code 9 */
+            TOTAL
+        ) = Code0 Code1 Code2 Code3 Code4 Code5 Code6 Code7 Code9 TOT_sum
+    ;
 run;
+proc sort
+        data=JB2_means2
+        out=JB2_sorted2
+    ;
+    by
+        YEAR
+    ;
+run;
+
+proc sql;
+    create table JB2_sorted3 as
+    select * from JB2_sorted2
+    where (_TYPE_ = 3 AND YEAR=1516)
+    ;
+quit;
+
+proc transpose data=JB2_sorted3 out=JB2_sorted4;
+    by County;
+run;
+
+proc print data=JB2_sorted4;
+run;
+
+
+proc print data=JB2_sorted3;
+    var
+        Code0 Code1 Code2 Code3 Code4 Code5 Code6 Code7 Code9
+    ;
+    by
+        YEAR
+        COUNTY
+    ;
+run;
+
+
+
+
+pattern0 v=s c=beige;    /* other        */
+pattern1 V=S c=vibg;     /* biofuels     */
+pattern2 v=s c=dabg;     /* coal         */
+pattern3 v=s c=mob;      /* gas          */
+pattern4 v=s c=day;      /* geothermal   */
+pattern5 v=s c=deoy;     /* hydoelectric */
+pattern6 v=s c=grp;      /* nuclear      */
+pattern7 v=s c=gray;     /* petro        */
+pattern9 v=s c=brown;    /* other        */
+
+proc gchart data=JB2_sorted3;
+   pie engytype / sumvar=produced
+                  other=5
+                  otherlabel='Renewable'
+                  group=year
+                  across=2
+                  clockwise
+                  value=none
+                  slice=outside
+                  percent=outside
+                  coutline=black
+                  noheading;
+run;
+quit;
+
 title;
 footnote;
 

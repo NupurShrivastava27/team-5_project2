@@ -241,6 +241,13 @@ data grad1415_final;
     by COUNTY;
 run;
 
+data grad_all;
+    set
+        grad1415_raw_sorted
+        grad1516_raw_sorted
+    ;
+run;
+
 proc means
         noprint
         sum
