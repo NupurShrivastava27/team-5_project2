@@ -220,7 +220,11 @@ title2
 ;
 
 footnote1
-''
+'If there is no achievement gap, we would expect the ratio of ethnicities of the graduating class to be roughly similar to the ratio of ethnicities of students who have dropped out.'
+;
+
+footnote2
+'However, we can see that in each of these counties, there appears to be a large discrepancy between these ratios, which indicates that certain ethnic groups are more likely to drop out than others.'
 ;
 
 *
@@ -343,47 +347,136 @@ proc transpose data=JB2_sorted3 out=JB2_sorted4;
     by County;
 run;
 
-proc print data=JB2_sorted4;
+proc sql;
+	create table JB2_sorted5 as
+	select * from JB2_sorted4
+	where _NAME_ not in ('YEAR', '_TYPE_', '_FREQ_', 'TOT_sum')
+	;
+quit;
+
+* This is perfect. Do not change it!;
+
+proc freq data=JB2_sorted5 noprint;
+   tables _NAME_ / out=JB2_sorted8;
+   weight COL1;
+   by COUNTY ;
 run;
 
+* End perfection;
 
-proc print data=JB2_sorted3;
-    var
-        Code0 Code1 Code2 Code3 Code4 Code5 Code6 Code7 Code9
+
+proc sql;
+    create table drop_by_county as
+    select
+        CDS_CODE,
+        ETHNIC,
+        GENDER,
+        DTOT,
+        YEAR,
+        COUNTY
+    from grad_drop_merged_sorted
+    where COUNTY
+    in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
+    and YEAR = 1516
+    ;
+quit;
+
+proc sort
+        data=drop_by_county
+        out=drop_by_county1
     ;
     by
-        YEAR
         COUNTY
+        ETHNIC
     ;
 run;
 
-
-
-
-pattern0 v=s c=beige;    /* other        */
-pattern1 V=S c=vibg;     /* biofuels     */
-pattern2 v=s c=dabg;     /* coal         */
-pattern3 v=s c=mob;      /* gas          */
-pattern4 v=s c=day;      /* geothermal   */
-pattern5 v=s c=deoy;     /* hydoelectric */
-pattern6 v=s c=grp;      /* nuclear      */
-pattern7 v=s c=gray;     /* petro        */
-pattern9 v=s c=brown;    /* other        */
-
-proc gchart data=JB2_sorted3;
-   pie engytype / sumvar=produced
-                  other=5
-                  otherlabel='Renewable'
-                  group=year
-                  across=2
-                  clockwise
-                  value=none
-                  slice=outside
-                  percent=outside
-                  coutline=black
-                  noheading;
+proc means
+        noprint
+        sum
+        data=drop_by_county1
+        nonobs
+    ;
+    var
+        DTOT
+    ;
+    class
+        COUNTY
+        ETHNIC
+    ;
+    output
+        out=drop_by_county2
+        sum(DTOT) = DTOT_by_county
+    ;
+;
 run;
+
+proc sql;
+    create table drop_by_county3 as
+    select County, Ethnic, DTOT_by_county
+    from drop_by_county2
+    where _TYPE_ = 3
+    ;
 quit;
+
+proc freq data=drop_by_county3 noprint;
+   tables ETHNIC / out=drop_by_county4;
+   weight DTOT_by_county;
+   by COUNTY ;
+run;
+
+data drop_by_county5(drop=COUNT);
+    set drop_by_county4(rename=(Percent=Drop_percent));
+run;
+
+data JB2_sorted9(drop=_NAME_ COUNT);
+    set JB2_sorted8(rename=(Percent=Grad_percent));
+    length ETHNIC 8;
+    ETHNIC = substr(_NAME_,5,1);
+run;
+
+data JB2_final;
+    merge JB2_sorted9 drop_by_county5;
+    by COUNTY ETHNIC;
+run;
+
+data JB2_map;
+   /* The ID required variable contains the name of the attribute map */
+   /* The VALUE required variable contains the value of the GROUP variable, 
+      which in this case is FLAVOR */
+   /* The FILLCOLOR variable is used to change the color for the bars created by the VBAR 
+      statement. */
+
+   input id $ value fillcolor $;
+   datalines;
+eth 0 red
+eth 1 orange
+eth 2 yellow
+eth 3 green
+eth 4 blue
+eth 5 purple
+eth 6 brown
+eth 7 black
+eth 9 white
+;
+run;
+
+* FIGURE THIS OUT;
+
+proc sgplot data=JB2_final dattrmap=JB2_map;
+hbarparm category=County response=Grad_Percent / group=Ethnic 
+              grouporder=data groupdisplay=stack discreteoffset=-0.17
+              barwidth=0.3 attrid=eth; /* order by counts of 1st bar */
+hbarparm category=County response=Drop_Percent / group=Ethnic 
+              grouporder=data groupdisplay=stack discreteoffset=0.17
+              barwidth=0.3 attrid=eth; /* order by counts of 2nd bar */
+yaxis discreteorder=data;
+xaxis grid values=(0 to 100 by 10) label="Percentage of Total with Group";
+run;
+
+
+* END FIGURE THIS OUT;
+
 
 title;
 footnote;
