@@ -6,7 +6,7 @@
 *
 This file uses the following analytic dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
-at California pubilc high schools by race, gender and schoo (AY2014-2015-2016).
+at California pubilc high schools by race, gender and school AY2014-2015-2016.
 Dataset Name: grad_drop_merged_sorted created in external file
 STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
@@ -48,24 +48,44 @@ footnote2
 Note: This compares these columns "E9, E10, E11, E12, D9, D10, D11, D12" from 
 dropouts1415 to the same column names from dropouts1516.
 Methodology: After combining all datasets during data preparation, use sum in 
-proc print to produce the totals of grade 9th to 12th for 2014 and 2015, 
-using column E9 to E12 and print in the temporary dataset created in the 
-corresponding data-prep file. Finally, ploted a graph out of it.
+proc sql to have the totals of grade 9th to 12th for 2014 and 2015 and print 
+in the temporary dataset created in the corresponding data-prep file. 
+Finally, ploted a graph out of it.
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 Possible Follow-up Steps: Need to bring the table in bar/stack graph to be 
 more presentable.
 ;
 
-data grad_drop;
-    set grad_drop_merged_sorted;
-run; 
-proc print 
-    data = grad_drop; 
-    sum E9 E10 E11 E12;
-    sum D9 D10 D11 D12;    
-    where CDS_CODE ne ' ';
-run; 
+proc sql;
+   create table Enroll_drops as
+   select YEAR, 
+   sum(E9) format=comma14.  as Enroll_Grade9th,
+   sum(E10) format=comma14. as Enroll_Grade10th,
+   sum(E11) format=comma14. as Enroll_Grade11th,
+   sum(E12) format=comma14. as Enroll_Grade12th,
+   sum(D9) format=comma14.  as Dropout_Grade9th,
+   sum(D10) format=comma14. as Dropout_Grade10th,
+   sum(D11) format=comma14. as Dropout_Grade11th,
+   sum(D12) format=comma14. as Dropout_Grade12th
+      from Grad_drop_merged_sorted
+      where YEAR is not missing
+      group by YEAR;
+proc sgpanel data=Enroll_drops;
+  title 'Actual Sales by Product, Year and Quarter';
+  panelby YEAR  / layout=columnlattice novarname noborder colheaderpos=bottom;
+  vbar Enroll_Grade9th / response=Enroll_Grade9th group=YEAR dataskin=gloss;
+  colaxis display=(nolabel);
+  rowaxis grid;
+  run;
+proc sgplot data=Enroll_drops;
+  title 'Actual Sales by Product and Quarter';
+  vbar Enroll_Grade9th / response=Enroll_Grade9th group=YEAR 
+        groupdisplay=cluster 
+        dataskin=gloss;
+  xaxis display=(nolabel);
+  yaxis grid;
+  run;
 title;
 footnote;
 
@@ -75,7 +95,7 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What is the rate of genders (male vs female) in both enrollments and dropouts (2014-15-2016)?'
+'Research Question: What is the rate of genders (male vs female) enrollments and dropouts AY2014-15-2016?'
 ;
 
 title2
@@ -83,11 +103,11 @@ title2
 ;
 
 footnote1
-'As can be seen, there was an extremely high rate of female dropouts AY2014-15.'
+'As can be seen, there was an increase in rate of female dropouts AY2015-16.'
 ;
 
 footnote2
-'Explanations in graph possibly shows the increase and decrease of female dropouts out of enrollments AY 2014-2015-2016.'
+'Explanations in graph possibly shows the increase in female dropouts AY2014-2015-2016.'
 ;
 
 *
@@ -102,16 +122,38 @@ Followup Steps: A possible follow-up to this approach could use an inferential
 statistical technique like linear regression.
 ;
  
-proc sort 
-    data=grad_drop_merged_sorted
-    out=grad_drop_sorted;
-    by gender;
+proc means
+    noprint
+    data=grad_drop_merged_sorted 
+    sum
+    ;
+	var
+        ETOT
+        DTOT
+    ;
+    class
+        YEAR
+        GENDER
+    ;
+    output
+        out=enrol_drop_gender (drop=_type_ _freq_)
+        sum(ETOT DTOT) = ETOT_sum DTOT_sum
+    ;
 run; 
-proc print 
-    data = grad_drop_sorted;
-    sum ETOT DTOT;
-    where location ne ' ';
-    by gender;
+data NS2_enrol_drop_gender; 
+set enrol_drop_gender;
+if cmiss(of _all_) then delete;
+run;
+proc print data=NS2_enrol_drop_gender noobs;
+run;
+proc sgpanel data=NS2_enrol_drop_gender;
+title3 "Male and Female Enrollments and Dropouts AY2014-15-2016";
+panelby YEAR GENDER;
+rowaxis label="Enroll Vs Drops";
+vbar GENDER / response=ETOT_sum 
+transparency=0.2;
+vbar GENDER / response=DTOT_sum barwidth=0.5 
+transparency=0.2; 
 run; 
 title;
 footnote;
@@ -122,23 +164,19 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: List least 10 Counties attained lowest mean in graduations AY2014-2015-2016?'
+'Research Question: Provide the proportion of Summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
 ;
 
 title2
-'Rationale: This would help identify last 10 Counties in California attained graduations for the year 2014-15-2016, finding reason with suggestions to least average counties for more school preparation that might have good impact in future batch.'
+'Rationale: This graph shows a high level demographic information of summer school graduates for the schoolof California.'
 ;
 
 footnote1
-'All ten counties listed appear to have mean of 12th-graders graduating, suggesting least average counties for school preparation that might have the greatest impact in better results.'
+'This data includes summer graduates and does not include students with high school equivalencies, such as, General Educational Development (GED) test or California High School Proficiency Examination (CHSPE).'
 ;
 
 footnote2
 "However, given the magnitude of these numbers, further investigation should be performed to ensure no data errors are involved."
-;
-
-footnote3
-"However, assuming there are no data issues underlying this analysis, possible explanations for such large numbers of 12th-graders , as well as lack of proper counseling for students early enough in high school to complete all necessary coursework."
 ;
 
 *
@@ -155,21 +193,7 @@ statistics computed do not include any possible illegal values, and better
 handle missing data, e.g., by using a previous year's data or a rolling average
 of previous years' data as a proxy.
 ;
-proc means 
-    data=grad_drop_merged_sorted mean;
-    out=grad_drop_sorted;
-    by COUNTY;
-    var TOTAL;
-run;
-proc sort 
-    data=grad_drop_sorted;    
-    by TOTAL descending;
-run;
-proc print 
-    data=grad_drop_sorted;
-    var COUNTY
-        TOTAL;
-run;
+
 title;
 footnote;
 
