@@ -9,7 +9,7 @@ questions regarding high school enrollments and dropouts and graduations trends
 at California pubilc high schools by race, gender and schools AY2014-2015-2016.
 
 Dataset Name: grad_drop_merged_sorted created in external file
-STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
+STAT6250-02_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
 
 See included file for dataset properties
@@ -247,7 +247,7 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: Provide the proportion of Summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
+'Research Question: Provide the proportion of summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
 ;
 
 title2
@@ -280,13 +280,83 @@ handle missing data, e.g., by using a previous year's data or a rolling
 average of previous years' data as a proxy.
 ;
 
-*still code in progress*
-data grad_ethinic;
-Ethinic="PAC_ISLD";
-Ethinic="AFRICAN_AM";
-Ethinic="WHITE";
-   attrib Ethinic format=$20;
+proc sql;
+create table ethnic_1415 as
+    select 
+    sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2,
+    sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2,
+    sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2,
+    sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2,
+    sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2,
+    sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2,
+    sum(WHITE) / SUM(TOTAL) as While format=percent8.2,
+    sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2,
+    sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2
+    from GRAD1415_RAW;
+ quit;
+proc sql;
+create table ethnic_1516 as
+    select 
+    sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2,
+    sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2,
+    sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2,
+    sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2,
+    sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2,
+    sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2,
+    sum(WHITE) / SUM(TOTAL) as While format=percent8.2,
+    sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2,
+    sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2
+    from Grad1516_RAW
+    ;
+quit;
+data grad_ethnic_cat
+    ;
+   input 
+       Ethnic_Cat $ 
+    ;
+datalines
+    ;
+HISPANIC 
+AMIND 
+ASIAN 
+PACISLD 
+FILIPINO 
+AFRICANAM 
+WHITE  
+TWOMORERACES 
+NOTREPORTED 
 ;
+data grad_ethnic_value;
+set ethnic_1415;
+array ethnic_1415[9] Hisp--NotReported;
+ do I=1 to 9;
+ Ethinic_Value=ethnic_1415(i);
+ output;
+ end;
+ keep Ethinic_Value;
+run; 
+data grad_ethnic_value2;
+set ethnic_1516;
+array ethnic_1516[9] Hisp--NotReported;
+ do I=1 to 9;
+ Ethinic_Value=ethnic_1516(i);
+ output;
+ end;
+ keep Ethinic_Value;
+run; 
+data grad_enthnic_final1;
+   merge grad_ethnic_cat  grad_ethnic_value ;
+run;
+data grad_enthnic_final2;
+   merge grad_ethnic_cat  grad_ethnic_value2;
+run;
+proc print 
+    data = grad_enthnic_final1;
+run;
+proc print 
+    data = grad_enthnic_final2;
+run;   
+*Pie graph for Graduation big pic by Ethnic AY1415-1516;
 
 title;
 footnote;
