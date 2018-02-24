@@ -47,14 +47,18 @@ footnote2
 *
 Note: This compares these columns "AFRICAN_AM, WHITE" from 
 grad1415_final to the same "TOTAL_SUM" from grad1415_means_sorted.
+
 Methodology: After combining all datasets during data preparation, use sum in 
 proc sql to produce the totals graduates of African American and White students.
 Then divide the sum from the total number of gradautes in the year 2014-2015.
+
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
-Possible Follow-up Steps: Compare it to the 2015-2016 data.
+
+Followup Steps: Compare it to the 2015-2016 data.
 Possbile perfrom hypothesis testing to determine if disrepancy is significant.
 ;
+
 proc SQL;
     Select 
         (sum(AFRICAN_AM)) as african_grad label = "Total African American Grad", 
@@ -65,6 +69,7 @@ proc SQL;
         grad1415_final
     ;    
 Quit;
+
 title;
 footnote;
 
@@ -88,27 +93,33 @@ footnote1
 footnote2
 'From the graph we can see that Los Angeles has the highest number of gradautes in 2014-2015.'
 ;
+
 footnote3
 'This could be from the large population in Los Angeles County.'
 ;
 
 *
 Note: This plots a histogram showing total graduates from all counties.
+
 Methodology: After combining all datasets during data preparation, use sgplot 
 to present the total graduates in each counties.
+
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
-Possible Follow-up Steps: Compare it to the 2015-2016 data.
-Maybe further investigate African American and White students graduation rate in LA County.
+
+Followup Steps: Compare it to the 2015-2016 data.
+Maybe further investigate African American and White students graduation rate
+in LA County.
 ;
+
 proc sgplot
     data=grad1415_means_sorted;
     hbar county / response=TOTAL_sum;
     title9 'Number of graduates in each county during 2014-2015';
 run;
+
 title;
 footnote;
-
 
 
 *******************************************************************************;
@@ -126,26 +137,33 @@ title2
 footnote1
 'The above show us the percentage change in the boy enrollment from 2014-2016.'
 ;
+
 footnote2
 'This is calculated by subtracting the total number of boy enrolled in 14-15 from 15-16 and divide by the boys enrolled in 14-15.'
 ;
+
 footnote3
 'Hence, if there is a decrease in enrollment, it would show a negative number.  Otherwise, a positive number.'
 ;
+
 footnote4
 'Our result shows that there is a 0.82% decrease in grade 12 boys enrollment.'
 ;
 
 *
 Note: This compares the changes in enrollment rate of Grad 12 boys from 2014-2016.
+
 Methodology: Using Proc SQL, we create 2 tables which contain the the sum of 
 grade 12 boys enrollment  from each year.  Then i calculated the percentage change
 by selecting the total from each table.
+
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
-Possible Follow-up Steps: Limit it to certain county and or race.
+
+Followup Steps: Limit it to certain county and or race.
 Determine if trend support graduation rate of different enthic group.
 ;
+
 proc SQL;
     Create Table E12B_1415 as
         Select sum(E12) as tote_1415 label = "Total Number of Boy Enrolled in 2014-2015"
@@ -164,5 +182,6 @@ proc SQL;
     Select(((Select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change label = "Percentage Change of Boys' Enrollment from 2014-2016" format=percent7.2
     From E12B_1415;
 Quit;
+
 title;
 footnote;
