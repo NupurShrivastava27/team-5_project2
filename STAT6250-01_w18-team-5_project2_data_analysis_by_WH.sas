@@ -61,8 +61,10 @@ Possbile perfrom hypothesis testing to determine if disrepancy is significant.
 
 proc SQL;
     Select 
-        (sum(AFRICAN_AM)) as african_grad label = "Total African American Grad", 
-        (sum(WHITE)) as white_grad label = "Total White Grad", 
+        (sum(AFRICAN_AM)) as african_grad 
+            label = "Total African American Grad", 
+        (sum(WHITE)) as white_grad 
+            label = "Total White Grad", 
         (sum(AFRICAN_AM) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) 
             label = "African American Grad %" 
                 format = percent7.1,
@@ -171,7 +173,8 @@ Determine if trend support graduation rate of different enthic group.
 proc SQL;
     Create Table E12B_1415 as
         Select
-            sum(E12) as tote_1415 label = "Total Number of Boy Enrolled in 2014-2015"
+            sum(E12) as tote_1415 
+                label = "Total Number of Boy Enrolled in 2014-2015"
         From
             grad_drop_merged_sorted
         Where
@@ -182,7 +185,8 @@ Quit;
 proc SQL;
     Create Table E12B_1516 as
         Select 
-            sum(E12) as tote_1516 label = "Total Number of Boy Enrolled in 2015-2016"
+            sum(E12) as tote_1516 
+                label = "Total Number of Boy Enrolled in 2015-2016"
         From 
             grad_drop_merged_sorted
         Where 
