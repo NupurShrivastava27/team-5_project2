@@ -51,7 +51,6 @@ footnote3
 'The change in dropout rate for each county is the dropout rate for 2015-2016 minus the dropout rate for 2014-2015.'
 ;
 
-
 *
 Methodology: Using the merged data set, we extract the sum of enrollments and
 dropouts for each county using PROC MEANS. From there, we separate the output
@@ -91,6 +90,7 @@ proc means
     ;
 ;
 run;
+
 data JB1_data1415;
     retain
         YEAR
@@ -125,6 +125,7 @@ data JB1_data1415;
         delete
     ;
 run;
+
 data JB1_data1516;
     retain
         YEAR
@@ -159,6 +160,7 @@ data JB1_data1516;
         delete
     ;
 run;
+
 data JB1_merged;
     retain
         COUNTY
@@ -180,6 +182,7 @@ data JB1_merged;
     change_in_dropout_ratio = dropout_ratio_1516 - dropout_ratio_1415
     ;
 run;
+
 proc sort
         data=JB1_merged
         out=JB1_sorted
@@ -188,6 +191,7 @@ proc sort
         descending change_in_dropout_ratio
     ;
 run;
+
 proc print
         noobs
         label
@@ -200,6 +204,14 @@ proc print
         ETOT_sum_1516
         dropout_ratio_1516
         change_in_dropout_ratio
+    ;
+    label
+        COUNTY = 'County'
+        ETOT_Sum_1415='2014-2015 Enrollments'
+        dropout_ratio_1415='2014-2015 Dropouts per Enrollments'
+        ETOT_Sum_1516='2015-2016 Enrollments'
+        dropout_ratio_1516='2015-2016 Dropouts per Enrollments'
+        change_in_dropout_ratio='Change in Dropouts per Enrollments'
     ;
 run;
 title;
@@ -220,18 +232,40 @@ title2
 ;
 
 footnote1
-'If there is no achievement gap, we would expect the ratio of ethnicities of the graduating class to be roughly similar to the ratio of ethnicities of students who have dropped out.'
+'For each county, the top bar shows the ratio of the graduation rate for each ethnic group. The bottom bar shows the dropout rate of each ethnic group in that county.'
 ;
 
 footnote2
 'However, we can see that in each of these counties, there appears to be a large discrepancy between these ratios, which indicates that certain ethnic groups are more likely to drop out than others.'
 ;
 
+footnote3
+'If there is no achievement gap, we would expect the ratio of ethnicities of the graduating class to be roughly similar to the ratio of ethnicities of students who have dropped out.'
+;
+
+footnote4
+'If the segment for a given ethnic group is much larger in the lower bar than in the upper bar, it indicates that within that county, members of that ethnic group drop out in greater proportion than they graduate, which could indicate an achievement gap between members of that group and the rest of the population in that county.'
+;
+
+footnote5
+'In this case, we see that in San Francisco County, the proportions of Hispanic and African American students who drop out is significantly higher than the proportions of those who graduate.'
+;
+
+footnote6
+'We can also observe a disparity in Tehama county, where the proportion of Hispanic students who drop out is much higher than the proportion of Hispanic students who graduate.'
+;
+
 *
-Methodology: Create a new data set from our original data set which only
+Methodology: Create a new data set from the graduation data set which only
 includes the counties from the previous step and the 2015-2016 academic year.
-Then calculate the total enrollment and dropout rates for each ethnicity in
-these counties, and present the data in a reasonable format.
+Then calculate the total graduation and dropout rates for each ethnicity in
+these counties, and present the data in a reasonable format. In this case, the
+graduation data contains a breakdown of each school's graduates by ethnicity,
+with each ethnicity represented by a separate column. Because of this, when
+extracting the data, we need to transpose the graduation data so that it is
+listed vertically. Then, we need to merge it with data about drops by county
+and create graphs that show the proportions of the graduation rate and dropout
+rate for each ethnicity.
 
 Limitations: There is some ambiguity with the differences between the count of
 total graduates in each county, and the number of enrolled 12th grade students
@@ -240,52 +274,17 @@ this is due to students who should have graduated were unable to do so, in which
 case it would appear that they had enrolled, but not graduated, and not dropped
 out. More investigation on this may be appropriate.
 
-Possible Follow-up Steps: Determine the most appropriate way to display this
-information in a way that explains the results for non-statisticians (i.e. pie
-chart, bar chart, some other format) and also resolve and interpret the
-discrepancy noted above.
+Possible Follow-up Steps: Figure out how to label the bars in the bar graph to
+say "Grad" and "Drop" for each bar.
 ;
-proc sql;
-    create table JB2_data as
-    select *
-    from grad_drop_merged_sorted
-    where COUNTY
-    in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
-    and YEAR = 1516
-    ;
-quit;
-proc sql;
-
-proc means
-        noprint
-        sum
-        mode
-        data=JB2_data
-        nonobs
-    ;
-    var
-        E12
-        D12
-        TOTAL_sum
-    ;
-    class
-        COUNTY
-        ETHNIC
-    ;
-    output
-        out=JB2_means1
-        sum(E12 D12) = E12_sum D12_sum
-        mode(TOTAL_sum) = TOTAL_mode
-    ;
-;
-run;
-
 proc sql;
     create table JB2_data2 as
     select *
     from grad_all
     where COUNTY
     in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
+    and
+    year=1516
     ;
 quit;
 
@@ -308,7 +307,6 @@ proc means
         TOTAL
     ;
     class
-        YEAR
         COUNTY
     ;
     output
@@ -327,19 +325,11 @@ proc means
         ) = Code0 Code1 Code2 Code3 Code4 Code5 Code6 Code7 Code9 TOT_sum
     ;
 run;
-proc sort
-        data=JB2_means2
-        out=JB2_sorted2
-    ;
-    by
-        YEAR
-    ;
-run;
 
 proc sql;
     create table JB2_sorted3 as
-    select * from JB2_sorted2
-    where (_TYPE_ = 3 AND YEAR=1516)
+    select * from JB2_means2
+    where _TYPE_=1 
     ;
 quit;
 
@@ -348,22 +338,17 @@ proc transpose data=JB2_sorted3 out=JB2_sorted4;
 run;
 
 proc sql;
-	create table JB2_sorted5 as
-	select * from JB2_sorted4
-	where _NAME_ not in ('YEAR', '_TYPE_', '_FREQ_', 'TOT_sum')
-	;
+    create table JB2_sorted5 as
+    select * from JB2_sorted4
+    where _NAME_ not in ('YEAR', '_TYPE_', '_FREQ_', 'TOT_sum')
+    ;
 quit;
-
-* This is perfect. Do not change it!;
 
 proc freq data=JB2_sorted5 noprint;
    tables _NAME_ / out=JB2_sorted8;
    weight COL1;
    by COUNTY ;
 run;
-
-* End perfection;
-
 
 proc sql;
     create table drop_by_county as
@@ -441,42 +426,64 @@ data JB2_final;
 run;
 
 data JB2_map;
-   /* The ID required variable contains the name of the attribute map */
-   /* The VALUE required variable contains the value of the GROUP variable, 
-      which in this case is FLAVOR */
-   /* The FILLCOLOR variable is used to change the color for the bars created by the VBAR 
-      statement. */
-
-   input id $ value fillcolor $;
-   datalines;
-eth 0 red
-eth 1 orange
-eth 2 yellow
-eth 3 green
-eth 4 blue
-eth 5 purple
-eth 6 brown
-eth 7 black
-eth 9 white
+    retain linecolor "black";
+    length id $3. value $18. fillcolor $8.;
+    input id $ value $ fillcolor $;
+    infile datalines delimiter='|';
+    datalines;
+        eth|Not Reported|cx607d8b
+        eth|Native American|cx8bc34a
+        eth|Asian|cx009688
+        eth|Pacific Islander|cxff5722
+        eth|Filipino|cx673ab7
+        eth|Hispanic|cxffc107
+        eth|African American|cx3f51b5
+        eth|White|cx00bcd4
+        eth|Two or More Races|cx795548
 ;
 run;
 
-* FIGURE THIS OUT;
-
-proc sgplot data=JB2_final dattrmap=JB2_map;
-hbarparm category=County response=Grad_Percent / group=Ethnic 
-              grouporder=data groupdisplay=stack discreteoffset=-0.17
-              barwidth=0.3 attrid=eth; /* order by counts of 1st bar */
-hbarparm category=County response=Drop_Percent / group=Ethnic 
-              grouporder=data groupdisplay=stack discreteoffset=0.17
-              barwidth=0.3 attrid=eth; /* order by counts of 2nd bar */
-yaxis discreteorder=data;
-xaxis grid values=(0 to 100 by 10) label="Percentage of Total with Group";
+data JB2_partial1;
+    informat Ethnic_group $20.;
+    input ETHNIC Ethnic_group $;
+    infile datalines delimiter='|';
+    datalines;
+        0|Not Reported
+        1|Native American
+        2|Asian
+        3|Pacific Islander
+        4|Filipino
+        5|Hispanic
+        6|African American
+        7|White
+        9|Two or More Races
+    ;
 run;
 
+proc sql;
+    create table JB2_final1 as
+    select
+        County,
+        JB2_final.Ethnic,
+        Ethnic_Group,
+        Grad_percent,
+        Drop_percent
+    from JB2_final left join JB2_partial1
+    on JB2_final.ETHNIC = JB2_partial1.ETHNIC
+    ;
+quit;
 
-* END FIGURE THIS OUT;
-
+ods graphics on / height=8in;
+proc sgplot data=JB2_final1 dattrmap=JB2_map;
+    hbarparm category=County response=Grad_Percent / group=Ethnic_group
+        grouporder=data groupdisplay=stack discreteoffset=-0.17
+        barwidth=.3 attrid=eth dataskin=pressed; /* order by counts of 1st bar */
+    hbarparm category=County response=Drop_Percent / group=Ethnic_group
+        grouporder=data groupdisplay=stack discreteoffset=0.17
+        barwidth=.3 attrid=eth dataskin=pressed; /* order by counts of 2nd bar */
+    yaxis discreteorder=data label="County";
+    xaxis grid values=(0 to 100 by 10) label="Percentage of Total with Group";
+run;
 
 title;
 footnote;
@@ -488,7 +495,7 @@ footnote;
 
 
 title1
-'Research Question: Within counties with a high increase in the ratio of dropouts, at which grade levels do we see the greatest number of dropouts?'
+'Research Question: Within counties with a high increase in the ratio of dropouts, at which grade levels do we see the greatest number of dropouts in 2015-2016?'
 ;
 
 title2
@@ -496,22 +503,110 @@ title2
 ;
 
 footnote1
-''
+'Here we see that in Inyo, Stanislaus, Tehama, and Lassen Counties, most of their students who drop out will do so while they are in 12th grade.'
+;
+
+footnote2
+'Additionally, we can see that Inyo and Stanislaus Counties have a much larger number of students who drop out overall than the rest of the counties shown here.'
+;
+
+footnote3
+'However, in San Francisco County, it appears that a majority of drop outs occur while students are in 11th grade; additional research may be required to determine the cause of this anomaly.'
 ;
 
 *
-Methodology: Using the data set created at the start of the previous question,
-sum up the dropouts by grade level for each county, and display the total
-number of dropouts per grade level using a reasonable presentation method.
+Methodology: Using the original merged data set, create a subset and sum up
+the dropouts by grade level for each county, and display the total number of
+dropouts per grade level in a horizontal bar chart.
 
 Limitations: It might make more sense to display this as a ratio rather than as
 a raw number, and crosstab information using the ethnicity data from the
-previous step may help illuminate trends that are present.
+previous step may help illuminate trends that are present. Also, the absence of
+total enrollment numbers in each county deprives the chart of some context.
 
 Possible Follow-up Steps: Determine the most effective way to communicate the
 results to a non-statistician audience, and add the data and sorting steps to
-the data prep file.
+the data prep file. Also look into adding total enrollment to the chart for
+additional context.
 ;
+proc sql;
+    create table JB3_data as
+    select County, D7, D8, D9, D10, D11, D12, DUS
+    from grad_drop_merged_sorted
+    where County
+    in ('Inyo', 'Stanislaus', 'San Francisco', 'Lassen' ,'Tehama')
+    and year = 1516
+    ;
+quit;
+
+proc means
+        noprint
+        sum
+        data=JB3_data
+        nonobs
+    ;
+    var
+        D7
+        D8
+        D9
+        D10
+        D11
+        D12
+        DUS
+    ;
+    class
+        COUNTY
+    ;
+    output
+        out=JB3_means1
+        sum(D7 D8 D9 D10 D11 D12 DUS) =
+            D7_sum
+            D8_sum
+            D9_sum
+            D10_sum
+            D11_sum
+            D12_sum
+            DUS_sum
+    ;
+;
+run;
+
+proc sql;
+    create table JB3_means2 as
+    select County, D7_sum, D8_sum, D9_sum, D10_sum, D11_sum, D12_sum
+    from JB3_means1
+    where _TYPE_=1
+    ;
+quit;
+
+data JB3_final;
+    set JB3_means2;
+    keep
+        County
+        Grade
+        Count
+    ;
+    retain
+        County
+        Grade
+        Count
+    ;
+    Grade=7; Count=D7_sum; output;
+    Grade=8; Count=D8_sum; output;
+    Grade=9; Count=D9_sum; output;
+    Grade=10; Count=D10_sum; output;
+    Grade=11; Count=D11_sum; output;
+    Grade=12; Count=D12_sum; output;
+run;
+
+proc sgplot data=JB3_final;
+    hbarparm category=County response=Count / dataskin=pressed
+        group=Grade groupdisplay=cluster;
+    xaxis grid offsetmin=0.1 label='2015-2016 Dropouts by County by Grade';
+    x2axis offsetmax=0.95 display=(nolabel) valueattrs=(size=6);
+    yaxis label='County';
+run;
+    
 
 title;
 footnote;
