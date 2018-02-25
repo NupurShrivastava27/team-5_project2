@@ -8,7 +8,7 @@ This file uses the following analytic dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
 at California pubilc high schools by race, gender and schoo (AY2014-2015-2016).
 Dataset Name: grad_drop_merged_sorted created in external file
-STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
+STAT6250-02_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
 See included file for dataset properties
 ;
@@ -20,7 +20,7 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 
 
 * load external file that generates analytic datasets cde_2014_analytic_file,
-  cde_2014_analytic_file_sort_frpm, and cde_2014_analytic_file_sort_sat;
+cde_2014_analytic_file_sort_frpm, and cde_2014_analytic_file_sort_sat;
 %include '.\STAT6250-02_w18-team-5_project2_data_preparation.sas';
 
 
@@ -63,8 +63,12 @@ proc SQL;
     Select 
         (sum(AFRICAN_AM)) as african_grad label = "Total African American Grad", 
         (sum(WHITE)) as white_grad label = "Total White Grad", 
-        (sum(AFRICAN_AM) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) label = "African American Grad %" format = percent7.1,
-        (sum(WHITE) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) label = "White Grad %" format = percent7.1
+        (sum(AFRICAN_AM) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) 
+            label = "African American Grad %" 
+                format = percent7.1,
+        (sum(WHITE) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) 
+            label = "White Grad %" 
+                format = percent7.1
     From
         grad1415_final
     ;    
@@ -166,21 +170,33 @@ Determine if trend support graduation rate of different enthic group.
 
 proc SQL;
     Create Table E12B_1415 as
-        Select sum(E12) as tote_1415 label = "Total Number of Boy Enrolled in 2014-2015"
-        From grad_drop_merged_sorted
-        Where GENDER='M' and
-              YEAR = 1415;
+        Select
+            sum(E12) as tote_1415 label = "Total Number of Boy Enrolled in 2014-2015"
+        From
+            grad_drop_merged_sorted
+        Where
+            GENDER='M' and
+            YEAR = 1415
+        ;
 Quit;
 proc SQL;
     Create Table E12B_1516 as
-        Select sum(E12) as tote_1516 label = "Total Number of Boy Enrolled in 2015-2016"
-        From grad_drop_merged_sorted
-        Where GENDER = 'M' and 
-              YEAR = 1516;
+        Select 
+            sum(E12) as tote_1516 label = "Total Number of Boy Enrolled in 2015-2016"
+        From 
+            grad_drop_merged_sorted
+        Where 
+            GENDER = 'M' and 
+            YEAR = 1516
+        ;
 Quit;
 proc SQL;
-    Select(((Select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change label = "Percentage Change of Boys' Enrollment from 2014-2016" format=percent7.2
-    From E12B_1415;
+    Select
+        (((Select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change 
+            label = "Percentage Change of Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+    From 
+        E12B_1415;
 Quit;
 
 title;
