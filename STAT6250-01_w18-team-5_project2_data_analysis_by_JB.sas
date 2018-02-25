@@ -4,8 +4,6 @@
 *******************************************************************************;
 
 *
-STAT6250-01_w18-team-5_project2_data_analysis_by_JB.sas
-
 This file uses four merged data sets to address research questions regarding
 graduation and dropout rates for students at schools in California during the
 2014-2015 and 2015-2016 academic years.
@@ -22,6 +20,7 @@ See the file referenced above for data set properties.
 * set relative file import path to current directory;
 X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPATH))-%length(%sysget(SAS_EXECFILENAME))))""";
 
+
 * load external file that generates analytic data set Education_raw;
 %include '.\STAT6250-01_w18-team-5_project2_data_preparation.sas';
 
@@ -29,7 +28,6 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 * Research Question Analysis Starting Point;
 *******************************************************************************;
-
 
 title1
 'Research Question: What are the top five counties that experienced the greatest increase in ratio of dropouts to enrollments from 2015 to 2016?'
@@ -70,6 +68,7 @@ Possible Follow-up Steps: Move the data steps into the data prep file, and do
 additional research to see if county names can be located for unmatched CDS
 codes.
 ;
+
 proc means
         noprint
         sum
@@ -222,7 +221,6 @@ footnote;
 * Research Question Analysis Starting Point;
 *******************************************************************************;
 
-
 title1
 'Research Question: Within the counties with a high increase in the ratio of dropouts to enrollments year over year, what are the proportions of the ethnic backgrounds of students who graduated compared to students who dropped out in the 2015-2016 academic year?'
 ;
@@ -277,6 +275,7 @@ out. More investigation on this may be appropriate.
 Possible Follow-up Steps: Figure out how to label the bars in the bar graph to
 say "Grad" and "Drop" for each bar.
 ;
+
 proc sql;
     create table JB2_data2 as
     select *
@@ -493,7 +492,6 @@ footnote;
 * Research Question Analysis Starting Point;
 *******************************************************************************;
 
-
 title1
 'Research Question: Within counties with a high increase in the ratio of dropouts, at which grade levels do we see the greatest number of dropouts in 2015-2016?'
 ;
@@ -529,6 +527,7 @@ results to a non-statistician audience, and add the data and sorting steps to
 the data prep file. Also look into adding total enrollment to the chart for
 additional context.
 ;
+
 proc sql;
     create table JB3_data as
     select County, D7, D8, D9, D10, D11, D12, DUS
