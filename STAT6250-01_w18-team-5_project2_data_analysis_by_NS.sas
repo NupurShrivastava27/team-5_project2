@@ -23,7 +23,7 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 
 * load external file that generates analytic datasets cde_2014_analytic_file,
   cde_2014_analytic_file_sort_frpm, and cde_2014_analytic_file_sort_sat;
-%include '.\STAT6250-02_w18-team-5_project2_data_preparation.sas';
+%include '.\STAT6250-01_w18-team-5_project2_data_preparation.sas';
 
 
 *******************************************************************************;
@@ -275,33 +275,34 @@ data grad_ethnic_value;
 set ethnic_1415; 
 array ethnic_1415[9] Hisp--NotReported; 
 do I=1 to 9; 
-Ethinic_1415=ethnic_1415(i); 
+Ethnic_1415=ethnic_1415(i); 
 output; 
 end; 
-keep Ethinic_1415; 
+keep Ethnic_1415; 
 run;  
 data grad_ethnic_value2; 
 set ethnic_1516; 
 array ethnic_1516[9] Hisp--NotReported; 
  do I=1 to 9; 
- Ethinic_1516=ethnic_1516(i); 
+ Ethnic_1516=ethnic_1516(i); 
  output; 
  end; 
- keep Ethinic_1516; 
+ keep Ethnic_1516; 
 run;  
-data grad_enthnic_final1; 
-   merge grad_ethnic_cat  grad_ethnic_1415 ; 
+data grad_ethnic_final1; 
+   merge grad_ethnic_cat  grad_ethnic_value ; 
 run; 
-data grad_enthnic_final2; 
-   merge grad_ethnic_cat  grad_ethnic_1516; 
+data grad_ethnic_final2; 
+   merge grad_ethnic_cat  grad_ethnic_value2; 
 run;
 data Grad_ethnic_1416;
-   set grad_enthnic_final1;
-   set grad_enthnic_final2;
+   set grad_ethnic_final1;
+   set grad_ethnic_final2;
 run;
 proc print 
     data=Grad_ethnic_1416;
     title3 'The percentage of Summer twelfth-grade graduates by ethnic AY1415-1516';
+    title4 '||Pie Graph by year out of this table is coming soon||';
 run;
 
 title;
