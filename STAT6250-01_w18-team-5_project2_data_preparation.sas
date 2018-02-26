@@ -171,7 +171,6 @@ https://github.com/stat6250/team-5_project2/blob/master/data/dropouts1516.xls?ra
 
 * sort and check raw data sets for duplicates with respect to primary keys,
   data contains no blank rows so no steps to remove blanks is needed;
-
 proc sort
         nodupkey
         data=grad1415_raw
@@ -213,6 +212,11 @@ proc sort
     ;
 run;
 
+*
+Use PROC MEANS to generate a data set containing the total number of graduates
+from each county in AY2014-2015 (TOTAL_sum), as well as the total number of
+schools in each county (_FREQ_)
+;
 proc means
         noprint
         sum
@@ -229,10 +233,17 @@ proc means
     ;
 run;
 
+* Sort the data set created in the previous step by county;
 proc sort data=grad1415_means out=grad1415_means_sorted;
     by COUNTY;
 run;
 
+*
+Merge the data set containing graduations by school and total graduations by
+county in AY2014-2015 so that each row in the new data set contains graduation
+statistics for an individual school as well as the total number of graduations
+in the county in which that school is located
+;
 data grad1415_final;
     merge
         grad1415_raw_sorted
@@ -241,13 +252,11 @@ data grad1415_final;
     by COUNTY;
 run;
 
-data grad_all;
-    set
-        grad1415_raw_sorted
-        grad1516_raw_sorted
-    ;
-run;
-
+*
+Use PROC MEANS to generate a data set containing the total number of graduates
+from each county in AY2015-2016 (TOTAL_sum), as well as the total number of
+schools in each county (_FREQ_)
+;
 proc means
         noprint
         sum
@@ -264,10 +273,17 @@ proc means
     ;
 run;
 
+* Sort the data set created in the previous step by county;
 proc sort data=grad1516_means out=grad1516_means_sorted;
     by COUNTY;
 run;
 
+*
+Merge the data set containing graduations by school and total graduations by
+county in AY2015-2016 so that each row in the new data set contains graduation
+statistics for an individual school as well as the total number of graduations
+in the county in which that school is located
+;
 data grad1516_final;
     merge
         grad1516_raw_sorted
@@ -276,8 +292,20 @@ data grad1516_final;
     by COUNTY;
 run;
 
+*
+Vertically join the two final data sets containing graduation records for use
+in analysis steps
+;
+data grad_all;
+    set
+        grad1415_final
+        grad1516_final
+    ;
+run;
 
-* combine data sets horizontally;
+*
+Combine data sets for dropout and graduation data for AY2014-2015 horizontally
+;
 data all1415;
     merge
         dropouts1415_raw_sorted
@@ -285,6 +313,9 @@ data all1415;
     by CDS_CODE;
 run;
 
+*
+Combine data sets for dropout and graduation data for AY2015-2016 horizontally
+;
 data all1516;
     merge
         dropouts1516_raw_sorted
@@ -292,11 +323,18 @@ data all1516;
     by CDS_CODE;
 run;
 
-* combine data sets vertically;
+*
+Finally, combine all merged data into a single data set containing dropout and
+graduation data for both years
+;
 data grad_drop_merged;
     set all1415 all1516;
 run;
 
+*
+Sort the resulting combined data set by year, CDS code, ethnic code, and gender,
+excluding any records in which the CDS code is missing
+;
 proc sort
         nodupkey
         data=grad_drop_merged
