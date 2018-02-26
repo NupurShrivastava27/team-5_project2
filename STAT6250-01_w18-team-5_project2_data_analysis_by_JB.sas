@@ -69,6 +69,11 @@ additional research to see if county names can be located for unmatched CDS
 codes.
 ;
 
+*
+Using the combined data set from the data prep file, generate a new data set
+containing the sums of enrollments (ETOT_sum) and dropouts (DTOT_sum) for each
+county, sorted by year and by county
+;
 proc means
         noprint
         sum
@@ -90,6 +95,13 @@ proc means
 ;
 run;
 
+*
+From the data set generated in the previous PROC MEANS step, generate a new
+data set that includes only the year, county, enrollment total, dropout total,
+and calculated dropout ratio (dropout_ratio_1415) for each county, excluding
+any counties in which enrollment is very low (less than 50 students total), and
+only choosing data for AY2014-2015
+;
 data JB1_data1415;
     retain
         YEAR
@@ -125,6 +137,13 @@ data JB1_data1415;
     ;
 run;
 
+*
+From the data set generated in the previous PROC MEANS step, generate a new
+data set that includes only the year, county, enrollment total, dropout total,
+and calculated dropout ratio (dropout_ratio_1516) for each county, excluding
+any counties in which enrollment is very low (less than 50 students total), and
+only choosing data for AY2015-2016
+;
 data JB1_data1516;
     retain
         YEAR
@@ -160,6 +179,12 @@ data JB1_data1516;
     ;
 run;
 
+*
+Merge the data sets created in the previous two steps to create a new data set
+that includes all the data from the previous steps as well as a new calculated
+value, change_in_dropout_ratio, which is the dropout ratio from AY2015-2016
+minus the dropout ratio from AY2014-2015
+;
 data JB1_merged;
     retain
         COUNTY
@@ -182,6 +207,10 @@ data JB1_merged;
     ;
 run;
 
+*
+Sort the data set generated in the previous step by descending change in dropout
+ratio
+;
 proc sort
         data=JB1_merged
         out=JB1_sorted
@@ -191,6 +220,10 @@ proc sort
     ;
 run;
 
+*
+Print the descriptive data for the counties with the highest increase in dropout
+ratio from AY2014-2015 to AY2015-2016
+;
 proc print
         noobs
         label
@@ -213,6 +246,7 @@ proc print
         change_in_dropout_ratio='Change in Dropouts per Enrollments'
     ;
 run;
+
 title;
 footnote;
 
@@ -276,6 +310,10 @@ Possible Follow-up Steps: Figure out how to label the bars in the bar graph to
 say "Grad" and "Drop" for each bar.
 ;
 
+*
+Use PROC SQL to generate a new data set containing only the graduation data for
+AY2015-2016 for schools in counties with the highest change in dropout ratio
+;
 proc sql;
     create table JB2_data2 as
     select *
@@ -287,6 +325,13 @@ proc sql;
     ;
 quit;
 
+*
+Use PROC MEANS with the data set generated in the previous step to sum up the
+graduation numbers at each school by ethnicity and overall for each county,
+generating new columns named "Code#" corresponding to the ethnicity code as
+denoted in the data dictionary, and also as included in the data sets that
+pertain to student dropout rates
+;
 proc means
         noprint
         sum
@@ -325,17 +370,32 @@ proc means
     ;
 run;
 
+*
+Use PROC SQL and the _TYPE_=1 condition to extract the lines from the previously
+created data set that include data specific to each county
+;
 proc sql;
     create table JB2_sorted3 as
     select * from JB2_means2
-    where _TYPE_=1 
+    where _TYPE_=1
     ;
 quit;
 
+*
+Because the dropout data is organized with columns containing county and
+ethnic code, we need to transpose the data set generated in the previous step
+so that the resulting data set contains graduation data with columns for
+county and ethnic code, along with the count of graduations for each of those
+combinations stored in "COL1"
+;
 proc transpose data=JB2_sorted3 out=JB2_sorted4;
     by County;
 run;
 
+*
+Use PROC SQL to generate a new data set from the previous data set that excludes
+rows that do not include an ethnic code
+;
 proc sql;
     create table JB2_sorted5 as
     select * from JB2_sorted4
@@ -343,12 +403,43 @@ proc sql;
     ;
 quit;
 
+*
+Use PROC FREQ to generate a new data set from the previous data set that adds
+a column (PERCENT). For each county, the total number of graduations in
+AY2015-2016 is calculated, and then the number of graduates of each ethnicity
+within that county is divided by the total graduations in the county to generate
+a percentage. The result in PERCENT is 100 times the number of graduates in a
+county of a specific ethnicity (Code# in column _NAME_) divided by the total
+number of graduates in that county. For example, in row 6 of the resulting data
+set, COUNTY is "Inyo", _NAME_ is "Code5", and PERCENT is approximately 72.98.
+According to the data dictionary, ethnic code 5 corresponds to Hispanic. This
+means that in Inyo County, 72.98% of the graduates in 2016 were Hispanic.
+;
 proc freq data=JB2_sorted5 noprint;
    tables _NAME_ / out=JB2_sorted8;
    weight COL1;
    by COUNTY ;
 run;
 
+*
+Create a final data set for graduation data that drops the _NAME_ and COUNT
+columns, while creating a new column for a numerical representation of ethnic
+code (ETHNIC) that is created by using the substr() function to extract the
+number from each "Code#" entry in the _NAME_ field. This step also renames
+PERCENT to Grad_percent to be more descriptive for when we later merge it with
+the data set that refers to the percentages of students who drop out.
+;
+data JB2_sorted9(drop=_NAME_ COUNT);
+    set JB2_sorted8(rename=(Percent=Grad_percent));
+    length ETHNIC 8;
+    ETHNIC = substr(_NAME_,5,1);
+run;
+
+*
+Now that the graduation data set for the counties of interest has been created,
+use PROC SQL to start to prepare a data set containing data about the number
+of students who dropped out in AY2015-2016 in the counties in question
+;
 proc sql;
     create table drop_by_county as
     select
@@ -365,6 +456,10 @@ proc sql;
     ;
 quit;
 
+*
+Sort the data set generated in the previous step by county and ethnic code,
+similar to the structure of the final graduation data set
+;
 proc sort
         data=drop_by_county
         out=drop_by_county1
@@ -375,6 +470,10 @@ proc sort
     ;
 run;
 
+*
+Use PROC MEANS to calculate the total number of dropouts per county in
+AY2015-2016 (DTOT_by_county)
+;
 proc means
         noprint
         sum
@@ -395,6 +494,10 @@ proc means
 ;
 run;
 
+*
+Use PROC SQL to generate a new data set from the previous data set that includes
+only the county, ethnic code, and total number of dropouts per county
+;
 proc sql;
     create table drop_by_county3 as
     select County, Ethnic, DTOT_by_county
@@ -403,27 +506,43 @@ proc sql;
     ;
 quit;
 
+*
+Use PROC FREQ to generate a new data set that includes a column PERCENT that
+represents the percentage of the total number of students who drop out in each
+county who belong to the ethnic group represented by the associated ethnic code.
+For example, in row 6 of the resulting data set, COUNTY is "Inyo", ETHNIC is 5,
+and PERCENT is approximately 72.98. According to the data dictionary, ethnic
+code 5 corresponds to Hispanic. This means that in Inyo County, 72.98% of the
+students who dropped out in AY2015-2016 were Hispanic.
+;
 proc freq data=drop_by_county3 noprint;
    tables ETHNIC / out=drop_by_county4;
    weight DTOT_by_county;
    by COUNTY ;
 run;
 
+*
+Create a new data set from the previous data set that eliminates the COUNT
+column and renames PERCENT to Drop_percent to be more descriptive
+;
 data drop_by_county5(drop=COUNT);
     set drop_by_county4(rename=(Percent=Drop_percent));
 run;
 
-data JB2_sorted9(drop=_NAME_ COUNT);
-    set JB2_sorted8(rename=(Percent=Grad_percent));
-    length ETHNIC 8;
-    ETHNIC = substr(_NAME_,5,1);
-run;
-
+*
+Create a data set that includes the proportions of graduates of each ethnicity
+in the graduating class in each county, as well as the proportions of
+ethnicities of students who drop out in each county
+;
 data JB2_final;
     merge JB2_sorted9 drop_by_county5;
     by COUNTY ETHNIC;
 run;
 
+*
+Create an attribute map for use in generating a bar plot that displays a
+different color for each ethnicity
+;
 data JB2_map;
     retain linecolor "black";
     length id $3. value $18. fillcolor $8.;
@@ -442,6 +561,11 @@ data JB2_map;
 ;
 run;
 
+*
+Create a new data set containing the single digit ethnic code (ETHNIC) and the
+text of the ethnicity it represents (Ethnic_group) for use in the bar plot to
+be generated
+;
 data JB2_partial1;
     informat Ethnic_group $20.;
     input ETHNIC Ethnic_group $;
@@ -459,11 +583,14 @@ data JB2_partial1;
     ;
 run;
 
+*
+Use PROC SQL to generate the final data set to be used to generate a bar plot
+;
 proc sql;
     create table JB2_final1 as
     select
         County,
-        JB2_final.Ethnic,
+        /* JB2_final.Ethnic, */
         Ethnic_Group,
         Grad_percent,
         Drop_percent
@@ -472,14 +599,23 @@ proc sql;
     ;
 quit;
 
+*
+Use ODS GRAPHICS to fix the height of the display area, and then use PROC SGPLOT
+to create two grouped bar charts for each county, in which the top bar shows
+the proportions of ethnicities in the graduating class of 2016 in that county,
+while the bottom bar shows the proportions of ethnicities of the total
+population of students who have dropped out in AY2015-2016 in each county
+;
 ods graphics on / height=8in;
 proc sgplot data=JB2_final1 dattrmap=JB2_map;
-    hbarparm category=County response=Grad_Percent / group=Ethnic_group
-        grouporder=data groupdisplay=stack discreteoffset=-0.17
-        barwidth=.3 attrid=eth dataskin=pressed; /* order by counts of 1st bar */
-    hbarparm category=County response=Drop_Percent / group=Ethnic_group
-        grouporder=data groupdisplay=stack discreteoffset=0.17
-        barwidth=.3 attrid=eth dataskin=pressed; /* order by counts of 2nd bar */
+    hbarparm category=County response=Grad_Percent /
+        group=Ethnic_group grouporder=data groupdisplay=stack
+        discreteoffset=-0.17 barwidth=.3 attrid=eth dataskin=pressed;
+        /* order by counts of 1st bar */
+    hbarparm category=County response=Drop_Percent /
+        group=Ethnic_group grouporder=data groupdisplay=stack
+        discreteoffset=0.17 barwidth=.3 attrid=eth dataskin=pressed;
+        /* order by counts of 2nd bar */
     yaxis discreteorder=data label="County";
     xaxis grid values=(0 to 100 by 10) label="Percentage of Total with Group";
 run;
@@ -528,6 +664,12 @@ the data prep file. Also look into adding total enrollment to the chart for
 additional context.
 ;
 
+*
+Generate a new data set using the final data set created in the data prep file
+that contains only the county and number of dropouts for each grade level for
+every school in AY2015-2016, keeping only the records from the counties we found
+at the end of the first research question
+;
 proc sql;
     create table JB3_data as
     select County, D7, D8, D9, D10, D11, D12, DUS
@@ -538,6 +680,11 @@ proc sql;
     ;
 quit;
 
+*
+Use PROC MEANS to find the total number of students who dropped out in each
+grade level by county in AY2015-2016, saving the results in new columns D#_sum
+in which # represents the grade level
+;
 proc means
         noprint
         sum
@@ -570,6 +717,12 @@ proc means
 ;
 run;
 
+*
+Use PROC SQL to extract only the county and totals of students who dropped out
+from each grade level (note that DUS_sum, which contained the total number of
+students from a grade other than 7-12 who dropped out, is dropped at this point
+because the count for this variable for each county in question is 0)
+;
 proc sql;
     create table JB3_means2 as
     select County, D7_sum, D8_sum, D9_sum, D10_sum, D11_sum, D12_sum
@@ -578,6 +731,11 @@ proc sql;
     ;
 quit;
 
+*
+Create a final data set that includes the name of the each county, the grade
+level, and the number of students who dropped out from that grade level in that
+county (Count), for use in the final bar chart
+;
 data JB3_final;
     set JB3_means2;
     keep
@@ -598,6 +756,11 @@ data JB3_final;
     Grade=12; Count=D12_sum; output;
 run;
 
+*
+Use PROC SGPLOT to create a bar chart using the previous data set in which we
+see the total number of students who dropped out in AY2015-2016 for each county
+and for each grade level
+;
 proc sgplot data=JB3_final;
     hbarparm category=County response=Count / dataskin=pressed
         group=Grade groupdisplay=cluster;
@@ -605,7 +768,6 @@ proc sgplot data=JB3_final;
     x2axis offsetmax=0.95 display=(nolabel) valueattrs=(size=6);
     yaxis label='County';
 run;
-    
 
 title;
 footnote;
