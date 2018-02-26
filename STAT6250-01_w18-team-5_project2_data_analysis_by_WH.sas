@@ -59,22 +59,28 @@ Followup Steps: Compare it to the 2015-2016 data.
 Possbile perfrom hypothesis testing to determine if disrepancy is significant.
 ;
 
-proc SQL;
-    Select 
+*
+Using proc sql, i calculated the sum of the column AFRICAN_AM and WHITE
+then also calculate their percentage by using the total graduates number 
+from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
+2 decimal places.
+; 
+proc sql;
+    select 
         (sum(AFRICAN_AM)) as african_grad 
             label = "Total African American Grad", 
         (sum(WHITE)) as white_grad 
             label = "Total White Grad", 
-        (sum(AFRICAN_AM) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) 
+        (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
             label = "African American Grad %" 
                 format = percent7.1,
-        (sum(WHITE) / (Select (sum(TOTAL_sum)) From grad1415_means_sorted)) 
+        (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
             label = "White Grad %" 
                 format = percent7.1
-    From
+    from
         grad1415_final
     ;    
-Quit;
+quit;
 
 title;
 footnote;
@@ -118,6 +124,12 @@ Maybe further investigate African American and White students graduation rate
 in LA County.
 ;
 
+*
+I wanted to show the county with the largest number of graduates.
+I chose to use sgplot to showcase the total number of graduates in
+each county by using a horizontal histogram chart.  The visualization
+would clearly show which county has a highest number of graduates.
+;
 proc sgplot
     data=grad1415_means_sorted;
     hbar county / response=TOTAL_sum;
@@ -170,38 +182,61 @@ Followup Steps: Limit it to certain county and or race.
 Determine if trend support graduation rate of different enthic group.
 ;
 
-proc SQL;
-    Create Table E12B_1415 as
-        Select
+*
+By using proc sql, i created a new table called E12B_1415 to contain the
+total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
+the total number of boy by using the sum formula from the dataset 
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+is 1415.
+;
+proc sql;
+    create table E12B_1415 as
+        select
             sum(E12) as tote_1415 
-                label = "Total Number of Boy Enrolled in 2014-2015"
-        From
+                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
+        from
             grad_drop_merged_sorted
-        Where
+        where
             GENDER='M' and
             YEAR = 1415
         ;
-Quit;
-proc SQL;
-    Create Table E12B_1516 as
-        Select 
+quit;
+
+*
+By using proc sql, i created a new table called E12B_1516 to contain the
+total number of Grade 12 boys enrolled in the year 2015-2016.  I calculated
+the total number of boy by using the sum formula from the dataset 
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+is 1516.
+;
+proc sql;
+    create table E12B_1516 as
+        select 
             sum(E12) as tote_1516 
-                label = "Total Number of Boy Enrolled in 2015-2016"
-        From 
+                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
+        from 
             grad_drop_merged_sorted
-        Where 
+        where 
             GENDER = 'M' and 
             YEAR = 1516
         ;
-Quit;
-proc SQL;
-    Select
-        (((Select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change 
+quit;
+
+*
+By using proc sql, I calculated the percent change for Grade 12 boys
+enrollment using the simple rate change forumla.  I selected the total
+number of Grade 12 boys enrolled from the 2 datasets which contain the
+total number of boys enrolled in each year. I also formatted the percentage
+to be 2 decimal places.
+;
+proc sql;
+    select
+        (((select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change 
             label = "Percentage Change of Boys' Enrollment from 2014-2016" 
                 format=percent7.2
-    From 
+    from 
         E12B_1415;
-Quit;
+quit;
 
 title;
 footnote;
