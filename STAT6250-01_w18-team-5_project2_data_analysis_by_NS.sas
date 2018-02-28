@@ -31,19 +31,19 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What are the number of total enrollments vs dropouts of high school students for each grade in 2014-2015-2016?'
+'Research Question: What are the number of total enrollments and dropouts of CA high school graders ( 2014-2015-2016 )?'
 ;
 
 title2
-'Rationale: This provides a comparison between both enrollments and dropouts of each grade of CA high schools (2014-2015-2016).'
+'Rationale: This provides a comparison between total enrollments and dropouts of each CA high school graders ( 2014-2015-2016 ).'
 ;
 
 footnote1
-'Above result shows the stacked bar graph of all enrollments and dropouts of CA high schools, sum total by counties/schools (2014-2015-2016).'
+'Above result shows the bar graph of total enrollments and dropouts, sum total by counties/schools ( 2014-2015-2016 ).'
 ;
 
 footnote2
-'Moreover, we can see a clear comparison between AY2014-2016, suggesting to know the reasons behind the high rate of dropouts after enrollments.'
+'Moreover, we can see a clear comparison between 2014-2016, suggesting to know, reasons behind, high rate of dropouts after enrollments in 12th grade.'
 ;
 
 *
@@ -53,13 +53,14 @@ from dropouts1415 to the same column names from dropouts1516.
 Methodology: After combining all datasets during data preparation, use sum
 in proc sql to have the totals of grade 9th to 12th for 2014 and 2015 and
 print in the temporary dataset created in the corresponding data-prep file. 
-Finally, plotted a graph out of it.
+Finally, plotted a graph out of it using proc sgpanel.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
-Followup Steps: Need to bring the table in bar/stacked graph, be 
-more presentable.
+Followup Steps: This graph presents only high level picture of enrollments 
+and dropouts for 2014-2016.However, gender distributions with respect to 
+enrollments and dropouts are not presented.
 ;
 
 proc sql;
@@ -94,14 +95,14 @@ data enrolls_prep;
     ; 
     do I=1 to 4
     ; 
-        Enrolls=enroll_drops(i)
+        Enrollments=enroll_drops(i)
     ; 
     output
     ; 
     end
     ; 
     keep 
-        Enrolls; 
+        Enrollments; 
 run;  
 data drops_prep; 
     set 
@@ -168,20 +169,26 @@ run;
 proc sgpanel 
     data=Enroll_drop_1416
     ;
-    title3 "Enrollments and Dropouts AY2014-15-2016"
+    title3 "Enrollments and Dropouts ( 2014-15-2016 .)"
     ;
+	format 
+        Enrollments comma10.0
+	;
+	format 
+        Dropouts comma10.0
+	;
     panelby 
         YEAR
     ;
     rowaxis label
-        ="Number of Enrollments and Dropouts"
+        ="Number of  Enrollments  and  Dropouts"
     ;
     vbar
         Graders / 
     response
-        =Enrolls 
+        =Enrollments  
     transparency
-        =0.2
+        =0.5
     ;
     vbar
         Graders /
@@ -190,7 +197,7 @@ proc sgpanel
     barwidth
         =0.5
     transparency
-        =0.2
+        =0.5
     ;
 run;
 
@@ -203,7 +210,7 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What are the number of male and female enrollments and dropouts AY2014-15-2016?'
+'Research Question: What are the total numbers of male and female enrollments and dropouts ( 2014-15-2016 )?'
 ;
 
 title2
@@ -236,8 +243,14 @@ statistical technique like linear regression.
 proc means
     noprint
     data=grad_drop_merged_sorted 
-    sum
+    sum MAXDEC=2
     ;
+    label
+        ETOT = 'Total Enrollments'
+        DTOT = 'Total Dropouts'
+		YEAR = 'Year'
+		GENDER = 'Gender'
+    ;  
 	var
         ETOT
         DTOT
@@ -263,17 +276,24 @@ data ns2_enrol_drop_gender
         delete
     ;
 run;
-
+proc print data=ns2_enrol_drop_gender;
+run;
 proc sgpanel 
     data=ns2_enrol_drop_gender
     ;
     title3 "Male and Female Enrollments and Dropouts AY2014-15-2016"
     ;
-    panelby 
-        YEAR
+	format 
+        Enrollments comma10.0
+	;
+	format 
+        Dropouts comma10.0
+    ;
+    panelby 	   
+        YEAR 
     ;
     rowaxis label
-        ="Enroll Vs Drops"
+        ="Enroll  Vs  Drops"
     ;
     vbar
         GENDER / 
