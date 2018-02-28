@@ -64,17 +64,17 @@ more presentable.
 
 proc sql;
     create table
-        Enroll_drops as
+        enroll_drops as
     select 
         YEAR, 
-        sum(E9) format=comma14.  as Enroll_Grade9th,
-        sum(E10) format=comma14. as Enroll_Grade10th,
-        sum(E11) format=comma14. as Enroll_Grade11th,
-        sum(E12) format=comma14. as Enroll_Grade12th,
-        sum(D9) format=comma14.  as Dropout_Grade9th,
-        sum(D10) format=comma14. as Dropout_Grade10th,
-        sum(D11) format=comma14. as Dropout_Grade11th,
-        sum(D12) format=comma14. as Dropout_Grade12th
+        sum(E9) format=comma14.  as Enroll_GradeNine,
+        sum(E10) format=comma14. as Enroll_GradeTen,
+        sum(E11) format=comma14. as Enroll_GradeEleven,
+        sum(E12) format=comma14. as Enroll_GradeTwelth,
+        sum(D9) format=comma14.  as Dropout_GradeNine,
+        sum(D10) format=comma14. as Dropout_GradeTen,
+        sum(D11) format=comma14. as Dropout_GradeEleven,
+        sum(D12) format=comma14. as Dropout_GradeTwelth
     from 
         Grad_drop_merged_sorted
     where
@@ -82,7 +82,117 @@ proc sql;
     group by
         YEAR
     ;
-select * from Enroll_drops;
+quit;
+
+data enrolls_prep; 
+    set 
+        enroll_drops
+    ; 
+    array 
+        enroll_drops[4] 
+        Enroll_GradeNine--Enroll_GradeTwelth
+    ; 
+    do I=1 to 4
+    ; 
+        Enrolls=enroll_drops(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep 
+        Enrolls; 
+run;  
+data drops_prep; 
+    set 
+        enroll_drops
+    ; 
+    array 
+        enroll_drops[4] 
+        Dropout_GradeNine--Dropout_GradeTwelth
+    ; 
+    do 
+        I=1 to 4
+    ; 
+        Dropouts=enroll_drops(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep 
+        Dropouts
+    ; 
+run; 
+data enrolls_drops_years 
+    ; 
+    input  
+        YEAR 
+        Graders  
+    ; 
+    datalines 
+    ; 
+        1415 09
+        1415 10
+        1415 11
+        1415 12
+        1516 09
+        1516 10
+        1516 11
+        1516 12
+    ; 
+
+data enroll_years; 
+    merge 
+        enrolls_drops_years  
+        enrolls_prep
+    ; 
+run; 
+
+data drop_years; 
+    merge 
+        enrolls_drops_years
+        drops_prep
+    ; 
+run;
+
+data Enroll_drop_1416;
+    set 
+        enroll_years
+    ;
+    set 
+        drop_years
+    ;
+run;
+
+proc sgpanel 
+    data=Enroll_drop_1416
+    ;
+    title3 "Enrollments and Dropouts AY2014-15-2016"
+    ;
+    panelby 
+        YEAR
+    ;
+    rowaxis label
+        ="Number of Enrollments and Dropouts"
+    ;
+    vbar
+        Graders / 
+    response
+        =Enrolls 
+    transparency
+        =0.2
+    ;
+    vbar
+        Graders /
+    response
+        =Dropouts
+    barwidth
+        =0.5
+    transparency
+        =0.2
+    ;
+run;
 
 title;
 footnote;
@@ -138,9 +248,10 @@ proc means
     ;
     output
         out=enrol_drop_gender (drop=_type_ _freq_)
-        sum(ETOT DTOT) = ETOT_sum DTOT_sum
+        sum(ETOT DTOT) = Enrollments Dropouts
     ;
-run; 
+run;
+ 
 data ns2_enrol_drop_gender
     ;
     set 
@@ -152,6 +263,7 @@ data ns2_enrol_drop_gender
         delete
     ;
 run;
+
 proc sgpanel 
     data=ns2_enrol_drop_gender
     ;
@@ -159,7 +271,6 @@ proc sgpanel
     ;
     panelby 
         YEAR
-        GENDER
     ;
     rowaxis label
         ="Enroll Vs Drops"
@@ -167,14 +278,14 @@ proc sgpanel
     vbar
         GENDER / 
     response
-        =ETOT_sum 
+        =Enrollments 
     transparency
         =0.2
     ;
     vbar
         GENDER /
     response
-        =DTOT_sum
+        =Dropouts
     barwidth
         =0.5
     transparency
@@ -227,83 +338,158 @@ average of previous years' data as a proxy.
 proc sql; 
     create table 
         ethnic_1415 as 
-    select  
-    sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
-    sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
-    sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
-    sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
-    sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
-    sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
-    sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
-    sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
-    sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
-    from GRAD1415_RAW; 
+    select 
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
+    from 
+        GRAD1415_RAW
+    ; 
 quit; 
+
 proc sql; 
     create table ethnic_1516 as 
     select  
-    sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
-    sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
-    sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
-    sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
-    sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
-    sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
-    sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
-    sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
-    sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
-    from Grad1516_RAW 
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
+    from 
+        Grad1516_RAW 
     ; 
 quit; 
-data grad_ethnic_cat 
+
+data grad_ethnic_cat; 
+    input  
+        Ethnic_Cat $  
     ; 
-   input  
-       Ethnic_Cat $  
+    datalines 
     ; 
-datalines 
+        HISPANIC  
+        AMIND  
+        ASIAN  
+        PACISLD  
+        FILIPINO  
+        AFRICANAM  
+        WHITE   
+        TWOMORERACES  
+        NOTREPORTED  
     ; 
-HISPANIC  
-AMIND  
-ASIAN  
-PACISLD  
-FILIPINO  
-AFRICANAM  
-WHITE   
-TWOMORERACES  
-NOTREPORTED  
- ; 
+
 data grad_ethnic_value; 
-set ethnic_1415; 
-array ethnic_1415[9] Hisp--NotReported; 
-do I=1 to 9; 
-ethnic_1415p=ethnic_1415(i); 
-output; 
-end; 
-keep ethnic_1415p; 
-run;  
+    set 
+        ethnic_1415
+    ; 
+    array 
+        ethnic_1415[9] 
+        Hisp--NotReported
+    ; 
+    do 
+        I=1 to 9
+    ; 
+        ethnic_1415p=ethnic_1415(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep
+        ethnic_1415p
+    ; 
+run;
+ 
 data grad_ethnic_value2; 
-set ethnic_1516; 
-array ethnic_1516[9] Hisp--NotReported; 
- do I=1 to 9; 
- ethnic_1516p=ethnic_1516(i); 
- output; 
- end; 
- keep ethnic_1516p; 
+    set 
+        ethnic_1516
+    ; 
+    array 
+        ethnic_1516[9]
+        Hisp--NotReported; 
+    do 
+        I=1 
+    to 9
+    ; 
+     ethnic_1516p=ethnic_1516(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep
+        ethnic_1516p
+    ; 
 run;  
 data grad_ethnic_final1; 
-   merge grad_ethnic_cat  grad_ethnic_value ; 
-run; 
+    merge 
+        grad_ethnic_cat
+        grad_ethnic_value
+    ; 
+run;
+ 
 data grad_ethnic_final2; 
-   merge grad_ethnic_cat  grad_ethnic_value2; 
+    merge 
+        grad_ethnic_cat
+        grad_ethnic_value2
+    ; 
 run;
+
 data Grad_ethnic_1416;
-   set grad_ethnic_final1;
-   set grad_ethnic_final2;
+    set 
+        grad_ethnic_final1
+    ;
+    set 
+        grad_ethnic_final2
+    ;
 run;
-proc print 
-    data=Grad_ethnic_1416;
-    title3 'The percentage of Summer twelfth-grade graduates by ethnic AY1415-1516';
-    title4 '||Pie Graph by year out of this table is coming soon||';
-run;
+
+proc gchart 
+    data=Grad_ethnic_1416
+    ;
+    title3 "Percentage of summer twelfth-grade graduates by Ethnic AY1415"
+    ;
+    donut 
+        Ethnic_Cat /
+    type=sum 
+    sumvar
+        =ethnic_1415p 
+    noheading 
+    slice=inside 
+    value=none 
+    percent=inside 
+	descending
+    donutpct=30
+    ;
+
+proc gchart 
+    data=Grad_ethnic_1416
+    ;
+    title3 "Percentage of summer twelfth-grade graduates by Ethnic AY1516"
+    ;
+    donut 
+        Ethnic_Cat /
+    type=sum 
+    sumvar
+        =ethnic_1516p 
+    noheading
+    slice=inside
+    value=none 
+    percent=inside 
+	descending
+    donutpct=50
+    ;
+run; 
+quit;
 
 title;
 footnote;
