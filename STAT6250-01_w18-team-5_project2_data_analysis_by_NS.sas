@@ -173,12 +173,12 @@ proc sgpanel
     ;
     title3 "Enrollments and Dropouts ( 2014-15-2016 .)"
     ;
-	format 
+    format 
         Enrollments comma10.0
-	;
-	format 
+    ;
+    format 
         Dropouts comma10.0
-	;
+    ;
     panelby 
         YEAR 
     ;
@@ -246,10 +246,10 @@ proc means
     label
         ETOT = 'Total Enrollments'
         DTOT = 'Total Dropouts'
-		YEAR = 'Year'
-		GENDER = 'Gender'
+        YEAR = 'Year'
+        GENDER = 'Gender'
     ;  
-	var
+    var
         ETOT
         DTOT
     ;
@@ -280,10 +280,10 @@ proc sgpanel
     ;
     title3 "Male and Female Enrollments and Dropouts AY2014-15-2016"
     ;
-	format 
+    format 
         Enrollments comma10.0
-	;
-	format 
+    ;
+    format 
         Dropouts comma10.0
     ;
     panelby 	   
@@ -418,8 +418,8 @@ data grad_ethnic_value;
     ; 
     do 
         I=1 to 9
-    ; 
- 	Ethnic_2014=ethnic_1415(i)
+    ;
+        Ethnic_2014=ethnic_1415(i)
     ; 
     output
     ; 
@@ -468,8 +468,7 @@ data Grad_ethnic_1416;
     set 
         grad_ethnic_final1
     ;
-	
-	format 
+    format 
         ethnic_2014  percent8.2
     ;
     label
@@ -478,13 +477,14 @@ data Grad_ethnic_1416;
     set 
         grad_ethnic_final2
     ;
-	format 
+    format 
         ethnic_2015  percent8.2
     ;
-	label
+    label
         Ethnic_2015='Ethnic(2015-2016)'
     ;
 run;
+
 proc sort 
     data=Grad_ethnic_1416 
     out=Grad_ethnic_1416_sorted
@@ -494,6 +494,7 @@ proc sort
         ethnic_2015 
     ;
 run;
+
 proc print noobs 
     data=Grad_ethnic_1416_sorted
     ;
