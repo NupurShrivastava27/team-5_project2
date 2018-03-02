@@ -31,36 +31,38 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What are the number of total enrollments and dropouts of CA high school graders ( 2014-2015-2016 )?'
+'Research Question: What are the total enrollments and dropouts of each gradres in CA high school ( 2014-2015-2016 )?'
 ;
 
 title2
-'Rationale: This provides a comparison between total enrollments and dropouts of each CA high school graders ( 2014-2015-2016 ).'
+'Rationale: This provides a comparison between total enrollments and dropouts of 9th to 12th graders in CA high school ( 2014-2015-2016 ).'
 ;
 
 footnote1
-'Above result shows the bar graph of total enrollments and dropouts, sum total by counties/schools ( 2014-2015-2016 ).'
+'Above result shows the bar graph of total enrollments and dropouts, sum total by counties and schools.'
 ;
 
 footnote2
-'Moreover, we can see a clear comparison between 2014-2016, suggesting to know, reasons behind, high rate of dropouts after enrollments in 12th grade.'
+'Moreover, we can see a clear comparison between 2014-2016,i.e decrease in both enrollments and dropouts from 2014 to 2016.'
 ;
 
 *
 Note: This compares these columns "E9, E10, E11, E12, D9, D10, D11, D12" 
 from dropouts1415 to the same column names from dropouts1516.
 
-Methodology: After combining all datasets during data preparation, use sum
-in proc sql to have the totals of grade 9th to 12th for 2014 and 2015 and
-print in the temporary dataset created in the corresponding data-prep file. 
-Finally, plotted a graph out of it using proc sgpanel.
+Methodology: First, after combining all datasets during data preparation, 
+use sum function in sql procedure to have the totals of individual 9th,
+10th, 11th and 12th graders for AY 2014-2015 and 2015-2016 from 
+dropouts1415 and dropouts1516 dataset respectively. Populate the correct
+values using array function to provide table lookups in the temprary dataset. 
+Finally, plotted a graph using proc sgpanel.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
 Followup Steps: This graph presents only high level picture of enrollments 
 and dropouts for 2014-2016.However, gender distributions with respect to 
-enrollments and dropouts are not presented.
+enrollments and dropouts are not presented here in this graph.
 ;
 
 proc sql;
@@ -85,6 +87,7 @@ proc sql;
     ;
 quit;
 
+/*Arrays been used to provide table lookups.*/ 
 data enrolls_prep; 
     set 
         enroll_drops
@@ -112,8 +115,7 @@ data drops_prep;
         enroll_drops[4] 
         Dropout_GradeNine--Dropout_GradeTwelth
     ; 
-    do 
-        I=1 to 4
+    do I=1 to 4
     ; 
         Dropouts=enroll_drops(i)
     ; 
@@ -178,26 +180,20 @@ proc sgpanel
         Dropouts comma10.0
 	;
     panelby 
-        YEAR
+        YEAR 
     ;
-    rowaxis label
-        ="Number of  Enrollments  and  Dropouts"
+    rowaxis label="Enrollments  and  Dropouts"
     ;
     vbar
         Graders / 
-    response
-        =Enrollments  
-    transparency
-        =0.5
+    response=Enrollments  DATALABEL
+    transparency=0.2
     ;
     vbar
-        Graders /
-    response
-        =Dropouts
-    barwidth
-        =0.5
-    transparency
-        =0.5
+        Graders / 
+    response =Dropouts DATALABEL
+    barwidth =0.5
+    transparency=0.2
     ;
 run;
 
@@ -210,7 +206,7 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What are the total numbers of male and female enrollments and dropouts ( 2014-15-2016 )?'
+'Research Question: What are the total male and female enrollments and dropouts ( 2014-15-2016 )?'
 ;
 
 title2
@@ -218,23 +214,25 @@ title2
 ;
 
 footnote1
-'As can be seen, an increasing number of female dropouts from 2014-2015-2016.'
+'As can be seen, an decrease in numbers of female and male with respect to both enrollments and dropouts from 2014 to 2016.'
 ;
 
 footnote2
-'Moreover, graph possibly shows the increase of male in enrollments from 2014-2015-2016.'
+'However, we should know the reason of dropouts from AY 2014-2015-2016.'
 ;
 
 *
 Note: This compares the columns "ETOT, DTOT" from dropouts1415
 to the same column from dropouts1516.
 
-Methodology: Use proc sort to sort the dataset by gender. Then 
-sum the columns 'ETOT' and 'DTOT' in proc print AY (2014-2015-2016), 
-.
+Methodology: First, use sum function to the columns 'ETOT' and 'DTOT' 
+in mean procedure from sorted datset 'grad_drop_merged_sorted' for 
+AY 2014-2015-2016. Finally, plot a graph using proc sgpanel.
 
 Limitations: This methodology does not account for any schools with missing 
-data, nor does it attempt to validate data in any ways.
+data, nor does it attempt to validate data in any ways.And this graphh does
+not shows the ethnic categories of genders.Ethnic categories could help us
+to peek more into demographic data.
 
 Followup Steps: A possible follow-up to this approach could use an inferential
 statistical technique like linear regression.
@@ -276,8 +274,7 @@ data ns2_enrol_drop_gender
         delete
     ;
 run;
-proc print data=ns2_enrol_drop_gender;
-run;
+
 proc sgpanel 
     data=ns2_enrol_drop_gender
     ;
@@ -293,19 +290,19 @@ proc sgpanel
         YEAR 
     ;
     rowaxis label
-        ="Enroll  Vs  Drops"
+        ="Enrollments  Vs  Dropouts"
     ;
     vbar
-        GENDER / 
+        GENDER / DATALABEL
     response
-        =Enrollments 
+        =Enrollments  DATALABEL
     transparency
         =0.2
     ;
     vbar
         GENDER /
     response
-        =Dropouts
+        =Dropouts  DATALABEL
     barwidth
         =0.5
     transparency
@@ -322,19 +319,19 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: Provide the proportion of Summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
+'Research Question: Provide the percentage of summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
 ;
 
 title2
-'Rationale: This graph shows a high level demographic information of summer school graduates for the schoolof California.'
+'Rationale: This graph shows a high level demographic information of summer school graduates of California schools.'
 ;
 
 footnote1
-'This data includes summer graduates and does not include students with high school equivalencies, such as, General Educational Development (GED) test or California High School Proficiency Examination (CHSPE).'
+'High percentage of graduation from summer twelth grade belongs to the Hispanic, White and African Americans.'
 ;
 
 footnote2
-"However, given the magnitude of these numbers, further investigation should be performed to ensure no data errors are involved."
+'This data includes summer graduates and does not include students with General Educational Development (GED) test or California High School Proficiency Examination (CHSPE).'
 ;
 
 *
@@ -342,17 +339,21 @@ Note: This compares the column Total from grads1415 to the column TOTAL from
 grads1516.
 
 Methodology: After combining grads1415 and grads1516 during data preparation,  
-use proc mean by counties and then use proc sort to sort the dataset in 
-decending order and finally, print here to display  10 observations. 
+first, use sum function in sql procedure in order to calculate percentage using
+columns HISPANIC, AM_IND, ASIAN, PAC_ISLD, FILIPINO, AFRICAN_AM, WHITE, 
+TWO_MORE_RACES, NOT_REPORTED and TOTAL from GRAD1415_RAW and GRAD1516_RAW 
+dataset. Secondly, created new dataset with raw Data with the input statement.
+used arrays function been used to provide table lookups. Finally, sort the final
+temporary dataset to print in in tabular format.
 
 Limitations: This methodology does not account for schools with missing data,
-nor does it attempt to validate data in any way, like filtering for values
-outside of admissable values.
+nor does it attempt to validate data in any way. Moreover, this data includes 
+summer graduates and does not include students with high school equivalencies, 
+such as, General Educational Development (GED) test or California High School 
+Proficiency Examination (CHSPE).'
 
-Followup Steps: More carefully clean the values of variables so that the
-statistics computed do not include any possible illegal values, and better
-handle missing data, e.g., by using a previous year's data or a rolling 
-average of previous years' data as a proxy.
+Followup Steps: However, given the magnitude of these numbers, further 
+investigation should be performed to ensure no data errors are involved.
 ;
 
 proc sql; 
@@ -392,19 +393,19 @@ quit;
 
 data grad_ethnic_cat; 
     input  
-        Ethnic_Cat $  
+        Ethnic_Category $25. 
     ; 
     datalines 
     ; 
-        HISPANIC  
-        AMIND  
-        ASIAN  
-        PACISLD  
-        FILIPINO  
-        AFRICANAM  
-        WHITE   
-        TWOMORERACES  
-        NOTREPORTED  
+        Hispanic
+        AmericanInd
+        Asian
+        PacificIsld
+        Filipino  
+        AfricanAmerican
+        White   
+        MoreRaces
+        NotReported
     ; 
 
 data grad_ethnic_value; 
@@ -418,14 +419,14 @@ data grad_ethnic_value;
     do 
         I=1 to 9
     ; 
-        ethnic_1415p=ethnic_1415(i)
+ 	Ethnic_2014=ethnic_1415(i)
     ; 
     output
     ; 
     end
     ; 
     keep
-        ethnic_1415p
+ 		Ethnic_2014
     ; 
 run;
  
@@ -440,27 +441,27 @@ data grad_ethnic_value2;
         I=1 
     to 9
     ; 
-     ethnic_1516p=ethnic_1516(i)
+     Ethnic_2015=ethnic_1516(i)
     ; 
     output
     ; 
     end
     ; 
     keep
-        ethnic_1516p
+        Ethnic_2015 
     ; 
 run;  
 data grad_ethnic_final1; 
     merge 
         grad_ethnic_cat
-        grad_ethnic_value
+        grad_ethnic_value 
     ; 
 run;
  
 data grad_ethnic_final2; 
     merge 
         grad_ethnic_cat
-        grad_ethnic_value2
+        grad_ethnic_value2 
     ; 
 run;
 
@@ -468,48 +469,36 @@ data Grad_ethnic_1416;
     set 
         grad_ethnic_final1
     ;
+	
+	format 
+        ethnic_2014  percent8.2
+    ;
+    label
+        Ethnic_2014='Ethnic(2014-2015)'
+    ;
     set 
         grad_ethnic_final2
     ;
+	format 
+        ethnic_2015  percent8.2
+    ;
+	label
+        Ethnic_2015='Ethnic(2015-2016)'
+    ;
 run;
-
-proc gchart 
-    data=Grad_ethnic_1416
+proc sort 
+    data=Grad_ethnic_1416 
+    out=Grad_ethnic_1416_sorted
     ;
-    title3 "Percentage of summer twelfth-grade graduates by Ethnic AY1415"
+    by descending
+        ethnic_2014 
+        ethnic_2015 
     ;
-    donut 
-        Ethnic_Cat /
-    type=sum 
-    sumvar
-        =ethnic_1415p 
-    noheading 
-    slice=inside 
-    value=none 
-    percent=inside 
-	descending
-    donutpct=30
+run;
+proc print noobs 
+    data=Grad_ethnic_1416_sorted
     ;
-
-proc gchart 
-    data=Grad_ethnic_1416
-    ;
-    title3 "Percentage of summer twelfth-grade graduates by Ethnic AY1516"
-    ;
-    donut 
-        Ethnic_Cat /
-    type=sum 
-    sumvar
-        =ethnic_1516p 
-    noheading
-    slice=inside
-    value=none 
-    percent=inside 
-	descending
-    donutpct=50
-    ;
-run; 
-quit;
+run;
 
 title;
 footnote;
