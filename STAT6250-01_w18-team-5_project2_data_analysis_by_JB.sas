@@ -21,7 +21,7 @@ See the file referenced above for data set properties.
 X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPATH))-%length(%sysget(SAS_EXECFILENAME))))""";
 
 
-* load external file that generates analytic data set Education_raw;
+* load external file that generates analytic data set grad_drop_merged_sorted;
 %include '.\STAT6250-01_w18-team-5_project2_data_preparation.sas';
 
 
