@@ -426,7 +426,7 @@ data grad_ethnic_value;
     end
     ; 
     keep
- 		Ethnic_2014
+        Ethnic_2014
     ; 
 run;
  
@@ -436,12 +436,11 @@ data grad_ethnic_value2;
     ; 
     array 
         ethnic_1516[9]
-        Hisp--NotReported; 
-    do 
-        I=1 
-    to 9
+        Hisp--NotReported
     ; 
-     Ethnic_2015=ethnic_1516(i)
+    do I=1 to 9
+    ; 
+        Ethnic_2015=ethnic_1516(i)
     ; 
     output
     ; 
