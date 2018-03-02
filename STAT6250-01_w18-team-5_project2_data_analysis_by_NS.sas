@@ -286,7 +286,7 @@ proc sgpanel
     format 
         Dropouts comma10.0
     ;
-    panelby 	   
+    panelby
         YEAR 
     ;
     rowaxis label
