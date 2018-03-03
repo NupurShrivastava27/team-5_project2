@@ -892,7 +892,6 @@ First, after combining all datasets during data preparation, use sum function
 in sql procedure to have the totals of individual 9th,10th, 11th and 12th 
 graders from dataset Grad_drop_merged_sorted for AY 2014-2015 and 2015-2016. 
 ;
-
 proc sql;
     create table
         enroll_drops as
@@ -918,8 +917,7 @@ quit;
 *
 Then populate the correct values using array function to provide table lookups 
 in the temprary dataset
-; 
-
+;
 data enrolls_prep; 
     set 
         enroll_drops
@@ -979,6 +977,9 @@ data enrolls_drops_years
         1516 12
     ; 
 
+*
+Merging two datasets from array into new enroll_years dataset
+;
 data enroll_years; 
     merge 
         enrolls_drops_years  
@@ -986,6 +987,9 @@ data enroll_years;
     ; 
 run; 
 
+*
+Merging two datasets from array into new drop_years dataset
+;
 data drop_years; 
     merge 
         enrolls_drops_years
@@ -1007,7 +1011,6 @@ First, use sum function to the columns 'ETOT' and 'DTOT'
 in mean procedure from sorted datset 'grad_drop_merged_sorted' for 
 AY 2014-2015-2016
 ;
-
 proc means
     noprint
     data=grad_drop_merged_sorted 
@@ -1052,7 +1055,6 @@ columns HISPANIC, AM_IND, ASIAN, PAC_ISLD, FILIPINO, AFRICAN_AM, WHITE,
 TWO_MORE_RACES, NOT_REPORTED and TOTAL from GRAD1415_RAW and GRAD1516_RAW 
 datasets.
 ;
-
 proc sql; 
     create table 
         ethnic_1415 as 
@@ -1093,7 +1095,6 @@ Created new dataset with raw data with the input statement.Then used arrays
 function to provide table lookups and sort the final temporary dataset to 
 print in a tabular format.
 ;
-
 data grad_ethnic_cat; 
     input  
         Ethnic_Category $25. 
@@ -1153,14 +1154,20 @@ data grad_ethnic_value2;
         Ethnic_2015 
     ; 
 run; 
- 
+
+*
+Merging two datasets from array into new grad_ethnic_final1 dataset
+;
 data grad_ethnic_final1; 
     merge 
         grad_ethnic_cat
         grad_ethnic_value 
     ; 
 run;
- 
+
+*
+Merging two datasets from array into new grad_ethnic_final2 dataset
+;
 data grad_ethnic_final2; 
     merge 
         grad_ethnic_cat
@@ -1190,10 +1197,10 @@ data Grad_ethnic_1416;
 run;
 
 *
-Sort the old dataset by descending and populate the final sorted observation
+Use proc sort to create a temporary sorted table in descending by 
+ethnic_2014 and ethnic_2015 and populate the final sorted observation
 into Grad_ethnic_1416_sorted.
 ;
-
 proc sort 
     data=Grad_ethnic_1416 
     out=Grad_ethnic_1416_sorted
