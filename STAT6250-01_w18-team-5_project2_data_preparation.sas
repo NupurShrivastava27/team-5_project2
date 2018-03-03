@@ -884,3 +884,331 @@ data JB3_final;
 run;
 
 * End data steps for JB analysis file;
+
+* Begin data steps for NS analysis file;
+
+*
+First, after combining all datasets during data preparation, use sum function 
+in sql procedure to have the totals of individual 9th,10th, 11th and 12th 
+graders from dataset Grad_drop_merged_sorted for AY 2014-2015 and 2015-2016. 
+;
+proc sql;
+    create table
+        enroll_drops as
+    select 
+        YEAR, 
+        sum(E9) format=comma14.  as Enroll_GradeNine,
+        sum(E10) format=comma14. as Enroll_GradeTen,
+        sum(E11) format=comma14. as Enroll_GradeEleven,
+        sum(E12) format=comma14. as Enroll_GradeTwelth,
+        sum(D9) format=comma14.  as Dropout_GradeNine,
+        sum(D10) format=comma14. as Dropout_GradeTen,
+        sum(D11) format=comma14. as Dropout_GradeEleven,
+        sum(D12) format=comma14. as Dropout_GradeTwelth
+    from 
+        Grad_drop_merged_sorted
+    where
+        YEAR is not missing
+    group by
+        YEAR
+    ;
+quit;
+
+*
+Then populate the correct values using array function to provide table lookups 
+in the temprary dataset
+;
+data enrolls_prep; 
+    set 
+        enroll_drops
+    ; 
+    array 
+        enroll_drops[4] 
+        Enroll_GradeNine--Enroll_GradeTwelth
+    ; 
+    do I=1 to 4
+    ; 
+        Enrollments=enroll_drops(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep 
+        Enrollments; 
+run;
+ 
+data drops_prep; 
+    set 
+        enroll_drops
+    ; 
+    array 
+        enroll_drops[4] 
+        Dropout_GradeNine--Dropout_GradeTwelth
+    ; 
+    do I=1 to 4
+    ; 
+        Dropouts=enroll_drops(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep 
+        Dropouts
+    ; 
+run; 
+
+data enrolls_drops_years 
+    ; 
+    input  
+        YEAR 
+        Graders  
+    ; 
+    datalines 
+    ; 
+        1415 09
+        1415 10
+        1415 11
+        1415 12
+        1516 09
+        1516 10
+        1516 11
+        1516 12
+    ; 
+
+*
+Merging two datasets from array into new enroll_years dataset
+;
+data enroll_years; 
+    merge 
+        enrolls_drops_years  
+        enrolls_prep
+    ; 
+run; 
+
+*
+Merging two datasets from array into new drop_years dataset
+;
+data drop_years; 
+    merge 
+        enrolls_drops_years
+        drops_prep
+    ; 
+run;
+
+data Enroll_drop_1416;
+    set 
+        enroll_years
+    ;
+    set 
+        drop_years
+    ;
+run;
+
+*
+First, use sum function to the columns 'ETOT' and 'DTOT' 
+in mean procedure from sorted datset 'grad_drop_merged_sorted' for 
+AY 2014-2015-2016
+;
+proc means
+    noprint
+    data=grad_drop_merged_sorted 
+    sum MAXDEC=2
+    ;
+    label
+        ETOT = 'Total Enrollments'
+        DTOT = 'Total Dropouts'
+        YEAR = 'Year'
+        GENDER = 'Gender'
+    ;  
+    var
+        ETOT
+        DTOT
+    ;
+    class
+        YEAR
+        GENDER
+    ;
+    output
+        out=enrol_drop_gender (drop=_type_ _freq_)
+        sum(ETOT DTOT) = Enrollments Dropouts
+    ;
+run;
+ 
+data ns2_enrol_drop_gender
+    ;
+    set 
+        enrol_drop_gender
+    ;
+    if 
+        cmiss(of _all_) 
+    then 
+        delete
+    ;
+run;
+
+*
+After combining grads1415 and grads1516 during data preparation,  
+first, use sum function in sql procedure in order to calculate percentage using
+columns HISPANIC, AM_IND, ASIAN, PAC_ISLD, FILIPINO, AFRICAN_AM, WHITE, 
+TWO_MORE_RACES, NOT_REPORTED and TOTAL from GRAD1415_RAW and GRAD1516_RAW 
+datasets.
+;
+proc sql; 
+    create table 
+        ethnic_1415 as 
+    select 
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
+    from 
+        GRAD1415_RAW
+    ; 
+quit; 
+
+proc sql; 
+    create table ethnic_1516 as 
+    select  
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
+    from 
+        Grad1516_RAW 
+    ; 
+quit; 
+
+*
+Created new dataset with raw data with the input statement.Then used arrays 
+function to provide table lookups and sort the final temporary dataset to 
+print in a tabular format.
+;
+data grad_ethnic_cat; 
+    input  
+        Ethnic_Category $25. 
+    ; 
+    datalines 
+    ; 
+        Hispanic
+        AmericanInd
+        Asian
+        PacificIsld
+        Filipino  
+        AfricanAmerican
+        White   
+        MoreRaces
+        NotReported
+    ; 
+
+data grad_ethnic_value; 
+    set 
+        ethnic_1415
+    ; 
+    array 
+        ethnic_1415[9] 
+        Hisp--NotReported
+    ; 
+    do 
+        I=1 to 9
+    ;
+        Ethnic_2014=ethnic_1415(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep
+        Ethnic_2014
+    ; 
+run;
+ 
+data grad_ethnic_value2; 
+    set 
+        ethnic_1516
+    ; 
+    array 
+        ethnic_1516[9]
+        Hisp--NotReported
+    ; 
+    do I=1 to 9
+    ; 
+        Ethnic_2015=ethnic_1516(i)
+    ; 
+    output
+    ; 
+    end
+    ; 
+    keep
+        Ethnic_2015 
+    ; 
+run; 
+
+*
+Merging two datasets from array into new grad_ethnic_final1 dataset
+;
+data grad_ethnic_final1; 
+    merge 
+        grad_ethnic_cat
+        grad_ethnic_value 
+    ; 
+run;
+
+*
+Merging two datasets from array into new grad_ethnic_final2 dataset
+;
+data grad_ethnic_final2; 
+    merge 
+        grad_ethnic_cat
+        grad_ethnic_value2 
+    ; 
+run;
+
+data Grad_ethnic_1416;
+    set 
+        grad_ethnic_final1
+    ;
+    format 
+        ethnic_2014  percent8.2
+    ;
+    label
+        Ethnic_2014='Ethnic(2014-2015)'
+    ;
+    set 
+        grad_ethnic_final2
+    ;
+    format 
+        ethnic_2015  percent8.2
+    ;
+    label
+        Ethnic_2015='Ethnic(2015-2016)'
+    ;
+run;
+
+*
+Use proc sort to create a temporary sorted table in descending by 
+ethnic_2014 and ethnic_2015 and populate the final sorted observation
+into Grad_ethnic_1416_sorted.
+;
+proc sort 
+    data=Grad_ethnic_1416 
+    out=Grad_ethnic_1416_sorted
+    ;
+    by descending
+        ethnic_2014 
+        ethnic_2015 
+    ;
+run;
+
+*End data steps for NS analysis file;
