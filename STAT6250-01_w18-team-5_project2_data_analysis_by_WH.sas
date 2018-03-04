@@ -7,9 +7,11 @@
 This file uses the following analytic dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
 at California pubilc high schools by race, gender and schoo (AY2014-2015-2016).
+
 Dataset Name: grad_drop_merged_sorted created in external file
 STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
+
 See included file for dataset properties
 ;
 
@@ -180,46 +182,6 @@ data, nor does it attempt to validate data in any ways.
 Followup Steps: Limit it to certain county and or race.
 Determine if trend support graduation rate of different enthic group.
 ;
-
-*
-By using proc sql, i created a new table called E12B_1415 to contain the
-total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
-is 1415.
-;
-proc sql;
-    create table E12B_1415 as
-        select
-            sum(E12) as tote_1415 
-                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
-        from
-            grad_drop_merged_sorted
-        where
-            GENDER='M' and
-            YEAR = 1415
-        ;
-quit;
-
-*
-By using proc sql, i created a new table called E12B_1516 to contain the
-total number of Grade 12 boys enrolled in the year 2015-2016.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
-is 1516.
-;
-proc sql;
-    create table E12B_1516 as
-        select 
-            sum(E12) as tote_1516 
-                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
-        from 
-            grad_drop_merged_sorted
-        where 
-            GENDER = 'M' and 
-            YEAR = 1516
-        ;
-quit;
 
 *
 By using proc sql, I calculated the percent change for Grade 12 boys
