@@ -119,13 +119,13 @@ would clearly show which county has a highest number of graduates.
 proc sgplot
     noborder
     data=WH_grad1415_means_sorted;
-    styleattrs datacolors=(olive gold);
-    hbar county / response=TOTAL_AFRICAN_AM;
+    styleattrs datacolors=(red grey);
+    hbar county / response=TOTAL_AFRICAN_AM
         dataskin=pressed
         baselineattrs=(thickness=0)
         barwidth=1
         ;
-    hbar county / response=TOTAL_WHITE;
+    hbar county / response=TOTAL_WHITE
         dataskin=pressed
         baselineattrs=(thickness=0)
         barwidth=0.5
@@ -144,13 +144,13 @@ would clearly show which county has a highest number of graduates.
 proc sgplot
     noborder
     data=WH_grad1516_means_sorted;
-    styleattrs datacolors=(olive gold);
-    hbar county / response=TOTAL_AFRICAN_AM;
+    styleattrs datacolors=(red grey);
+    hbar county / response=TOTAL_AFRICAN_AM
         dataskin=pressed
         baselineattrs=(thickness=0)
         barwidth=1
         ;
-    hbar county / response=TOTAL_WHITE;
+    hbar county / response=TOTAL_WHITE
         dataskin=pressed
         baselineattrs=(thickness=0)
         barwidth=0.5
