@@ -117,11 +117,48 @@ each county by using a horizontal histogram chart.  The visualization
 would clearly show which county has a highest number of graduates.
 ;
 proc sgplot
-    data=grad1415_means_sorted;
-    hbar county / response=TOTAL_sum;
-    title9 'Number of graduates in each county during 2014-2015';
+    noborder
+    data=WH_grad1415_means_sorted;
+    styleattrs datacolors=(olive gold);
+    hbar county / response=TOTAL_AFRICAN_AM;
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=1
+        ;
+    hbar county / response=TOTAL_WHITE;
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=0.5
+        ;
+    xaxis display=(nolabel noline noticks);
+    yaxis display=(noline) grid;
+    title9 'Number of African American and White graduates in each county during 2014-2015';
 run;
 
+*
+I wanted to show the county with the largest number of graduates.
+I chose to use sgplot to showcase the total number of graduates in
+each county by using a horizontal histogram chart.  The visualization
+would clearly show which county has a highest number of graduates.
+;
+proc sgplot
+    noborder
+    data=WH_grad1516_means_sorted;
+    styleattrs datacolors=(olive gold);
+    hbar county / response=TOTAL_AFRICAN_AM;
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=1
+        ;
+    hbar county / response=TOTAL_WHITE;
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=0.5
+        ;
+    xaxis display=(nolabel noline noticks);
+    yaxis display=(noline) grid;
+    title9 'Number of African American and White graduates in each county during 2015-2016';
+run;
 title;
 footnote;
 
