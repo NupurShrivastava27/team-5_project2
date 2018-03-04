@@ -1224,14 +1224,14 @@ from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
 proc sql;
     create table african_white_grad_1415 as
         select 
-            (sum(AFRICAN_AM)) as african_grad 
+            (sum(AFRICAN_AM)) as african_grad_1415 
                 label = "Total African American Grad 14-15", 
-            (sum(WHITE)) as white_grad 
+            (sum(WHITE)) as white_grad_1415
                 label = "Total White Grad 14-15", 
-            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) as african_grad_per_1415
                 label = "African American Grad % 14- 15" 
                     format = percent7.1,
-            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) as white_grad_per_1415
                 label = "White Grad % 14-15" 
                     format = percent7.1
     from
@@ -1241,14 +1241,14 @@ quit;
 proc sql;
     create table african_white_grad_1516 as
         select 
-            (sum(AFRICAN_AM)) as african_grad 
+            (sum(AFRICAN_AM)) as african_grad_1516
                 label = "Total African American Grad 15-16", 
-            (sum(WHITE)) as white_grad 
+            (sum(WHITE)) as white_grad_1516
                 label = "Total White Grad 15-16", 
-            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) 
+            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) as african_grad_per_1516
                 label = "African American Grad % 15-16" 
                     format = percent7.1,
-            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) 
+            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) as white_grad_per_1516
                 label = "White Grad % 15-16" 
                     format = percent7.1
     from
