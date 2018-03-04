@@ -210,7 +210,7 @@ footnote3
 ;
 
 footnote4
-'Our result shows that there is a 0.82% decrease in grade 12 boys enrollment.'
+'Our result shows that the percentage change in grade 7-12 boys enrollment are within 2%.'
 ;
 
 *
@@ -238,19 +238,19 @@ proc sql;
     select
         (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) as E7B_change 
             label = "Percentage Change of Grade 7 Boys' Enrollment from 2014-2016" 
-                format=percent7.2
+                format=percent7.2,
         (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) as E8B_change 
             label = "Percentage Change of Grade 8 Boys' Enrollment from 2014-2016" 
-                format=percent7.2
+                format=percent7.2,
         (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) as E9B_change 
             label = "Percentage Change of Grade 9 Boys' Enrollment from 2014-2016" 
-                format=percent7.2
+                format=percent7.2,
         (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) as E10B_change 
             label = "Percentage Change of Grade 10 Boys' Enrollment from 2014-2016" 
-                format=percent7.2
+                format=percent7.2,
         (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415) as E11B_change 
             label = "Percentage Change of Grade 11 Boys' Enrollment from 2014-2016" 
-                format=percent7.2
+                format=percent7.2,
         (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415) as E12B_change 
             label = "Percentage Change of Grade 12 Boys' Enrollment from 2014-2016" 
                 format=percent7.2        
