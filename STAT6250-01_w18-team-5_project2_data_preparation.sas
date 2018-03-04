@@ -1216,6 +1216,53 @@ run;
 *Begin data steps for WH analysis file;
 
 *
+Using proc sql, i calculated the sum of the column AFRICAN_AM and WHITE
+then also calculate their percentage by using the total graduates number 
+from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
+2 decimal places.
+; 
+proc sql;
+    create table african_white_grad_1415 as
+        select 
+            (sum(AFRICAN_AM)) as african_grad 
+                label = "Total African American Grad 14-15", 
+            (sum(WHITE)) as white_grad 
+                label = "Total White Grad 14-15", 
+            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+                label = "African American Grad % 14- 15" 
+                    format = percent7.1,
+            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+                label = "White Grad % 14-15" 
+                    format = percent7.1
+    from
+        grad1415_final
+    ;    
+quit;
+proc sql;
+    create table african_white_grad_1516 as
+        select 
+            (sum(AFRICAN_AM)) as african_grad 
+                label = "Total African American Grad 15-16", 
+            (sum(WHITE)) as white_grad 
+                label = "Total White Grad 15-16", 
+            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+                label = "African American Grad % 15-16" 
+                    format = percent7.1,
+            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+                label = "White Grad % 15-16" 
+                    format = percent7.1
+    from
+        grad1415_final
+    ;    
+quit;
+data african_white_grad_1416;
+    merge
+        african_white_grad_1415
+        african_white_grad_1516
+    ;
+run;
+
+*
 By using proc sql, i created a new table called E12B_1415 to contain the
 total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
 the total number of boy by using the sum formula from the dataset 
