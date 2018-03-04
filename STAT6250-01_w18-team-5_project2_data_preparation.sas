@@ -1324,10 +1324,20 @@ GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year
 is 1415.
 ;
 proc sql;
-    create table E12B_1415 as
+    create table E7_12B_1415 as
         select
-            sum(E12) as tote_1415 
-                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
+            sum(E7) as toteg7_1415 
+                label = "Total Number of Grade 7 Boy Enrolled in 2014-2015"
+            sum(E8) as toteg8_1415 
+                label = "Total Number of Grade 8 Boy Enrolled in 2014-2015"
+            sum(E9) as toteg9_1415 
+                label = "Total Number of Grade 9 Boy Enrolled in 2014-2015"    
+            sum(E10) as toteg10_1415 
+                label = "Total Number of Grade 10 Boy Enrolled in 2014-2015"
+            sum(E11) as toteg11_1415 
+                label = "Total Number of Grade 11 Boy Enrolled in 2014-2015"    
+            sum(E12) as toteg12_1415 
+                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"    
         from
             grad_drop_merged_sorted
         where
@@ -1344,10 +1354,20 @@ GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year
 is 1516.
 ;
 proc sql;
-    create table E12B_1516 as
+    create table E7_12B_1516 as
         select 
+            sum(E7) as toteg7_1516 
+                label = "Total Number of Grade 7 Boy Enrolled in 2015-2016"
+            sum(E8) as toteg8_1516 
+                label = "Total Number of Grade 8 Boy Enrolled in 2015-2016"  
+            sum(E9) as toteg9_1516 
+                label = "Total Number of Grade 9 Boy Enrolled in 2015-2016" 
+            sum(E10) as toteg10_1516 
+                label = "Total Number of Grade 10 Boy Enrolled in 2015-2016" 
+            sum(E11) as toteg11_1516 
+                label = "Total Number of Grade 11 Boy Enrolled in 2015-2016" 
             sum(E12) as tote_1516 
-                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
+                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"     
         from 
             grad_drop_merged_sorted
         where 
