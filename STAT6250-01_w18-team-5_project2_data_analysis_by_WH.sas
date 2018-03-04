@@ -62,7 +62,8 @@ Followup Steps: Possbile perfrom hypothesis testing to determine
 if disrepancy is significant.
 ;
 
-proc print
+proc print 
+    label
     data = african_white_grad_1416
     ;
 run;
