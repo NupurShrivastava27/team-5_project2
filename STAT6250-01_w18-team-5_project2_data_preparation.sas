@@ -1212,3 +1212,47 @@ proc sort
 run;
 
 *End data steps for NS analysis file;
+
+*Begin data steps for WH analysis file;
+
+*
+By using proc sql, i created a new table called E12B_1415 to contain the
+total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
+the total number of boy by using the sum formula from the dataset 
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+is 1415.
+;
+proc sql;
+    create table E12B_1415 as
+        select
+            sum(E12) as tote_1415 
+                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
+        from
+            grad_drop_merged_sorted
+        where
+            GENDER='M' and
+            YEAR = 1415
+        ;
+quit;
+
+*
+By using proc sql, i created a new table called E12B_1516 to contain the
+total number of Grade 12 boys enrolled in the year 2015-2016.  I calculated
+the total number of boy by using the sum formula from the dataset 
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+is 1516.
+;
+proc sql;
+    create table E12B_1516 as
+        select 
+            sum(E12) as tote_1516 
+                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
+        from 
+            grad_drop_merged_sorted
+        where 
+            GENDER = 'M' and 
+            YEAR = 1516
+        ;
+quit;
+
+*End data steps for WH analysis file;
