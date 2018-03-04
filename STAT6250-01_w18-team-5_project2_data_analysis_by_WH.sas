@@ -7,9 +7,11 @@
 This file uses the following analytic dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
 at California pubilc high schools by race, gender and schoo (AY2014-2015-2016).
+
 Dataset Name: grad_drop_merged_sorted created in external file
 STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
 in the same directory as this file
+
 See included file for dataset properties
 ;
 
@@ -28,15 +30,15 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What is the graduation rate of between African American vs White in the year 2014-2015'
+'Research Question: What is the graduation rate between African American vs White in the year 2014-2016'
 ;
 
 title2
-'Rationale: This shows the difference graduation rate between Afircan American and White students in the year 2014-2015.'
+'Rationale: This shows the difference graduation rate between Afircan American and White students in the year 2014-2016.'
 ;
 
 footnote1
-'Above result shows the total number of graduates of African American and White student on the year 2014-2015 and their percentage'
+'Above result shows the total number of graduates of African American and White student on the year 2014-2016 and their percentage'
 ;
 
 footnote2
@@ -45,41 +47,26 @@ footnote2
 
 *
 Note: This compares these columns "AFRICAN_AM, WHITE" from 
-grad1415_final to the same "TOTAL_SUM" from grad1415_means_sorted.
+grad1415_final to the same "TOTAL_SUM" from
+grad1415_means_sorted and grad1516_means_sorted.
 
 Methodology: After combining all datasets during data preparation, use sum in 
 proc sql to produce the totals graduates of African American and White students.
-Then divide the sum from the total number of gradautes in the year 2014-2015.
+Then divide the sum from the total number of gradautes
+in the year 2014-2015 and 2015-2016.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
-Followup Steps: Compare it to the 2015-2016 data.
-Possbile perfrom hypothesis testing to determine if disrepancy is significant.
+Followup Steps: Possbile perfrom hypothesis testing to determine
+if disrepancy is significant.
 ;
 
-*
-Using proc sql, i calculated the sum of the column AFRICAN_AM and WHITE
-then also calculate their percentage by using the total graduates number 
-from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
-2 decimal places.
-; 
-proc sql;
-    select 
-        (sum(AFRICAN_AM)) as african_grad 
-            label = "Total African American Grad", 
-        (sum(WHITE)) as white_grad 
-            label = "Total White Grad", 
-        (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
-            label = "African American Grad %" 
-                format = percent7.1,
-        (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
-            label = "White Grad %" 
-                format = percent7.1
-    from
-        grad1415_final
-    ;    
-quit;
+proc print 
+    label
+    data = african_white_grad_1416
+    ;
+run;
 
 title;
 footnote;
@@ -118,8 +105,8 @@ to present the total graduates in each counties.
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
-Followup Steps: Compare it to the 2015-2016 data.
-Maybe further investigate African American and White students graduation rate
+Followup Steps:Maybe further investigate African American 
+and White students graduation rate
 in LA County.
 ;
 
@@ -130,11 +117,70 @@ each county by using a horizontal histogram chart.  The visualization
 would clearly show which county has a highest number of graduates.
 ;
 proc sgplot
-    data=grad1415_means_sorted;
-    hbar county / response=TOTAL_sum;
-    title9 'Number of graduates in each county during 2014-2015';
+    noborder
+    data=WH_grad1415_means_sorted;
+    styleattrs datacolors=(red grey);
+    hbar county / response=TOTAL_AFRICAN_AM
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=1
+        ;
+    hbar county / response=TOTAL_WHITE
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=0.5
+        ;
+    xaxis display=(nolabel noline noticks);
+    yaxis display=(noline) grid;
+    title9 'Number of African American and White graduates in each county during 2014-2015';
 run;
 
+title:
+footnote;
+
+title1
+'Research Question: Which county (column B) has the highest graduation rate in the year 2015-2016?'
+;
+
+title2
+'Rationale: This would show us which county did best in terms of graduation rate in the year 2015-2016.'
+;
+
+footnote1
+'Above shows a histogram of all the counties total number of graduates in the year 2015-2016.'
+;
+
+footnote2
+'From the graph we can see that the distribution amongest African American and White graduates is very similar to 2014-2015.'
+;
+
+footnote3
+'This shows a steady trend between the rate of graduation between African American and White students.'
+;
+*
+I wanted to show the county with the largest number of graduates.
+I chose to use sgplot to showcase the total number of graduates in
+each county by using a horizontal histogram chart.  The visualization
+would clearly show which county has a highest number of graduates.
+;
+proc sgplot
+    noborder
+    data=WH_grad1516_means_sorted;
+    styleattrs datacolors=(red grey);
+    hbar county / response=TOTAL_AFRICAN_AM
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=1
+        ;
+    hbar county / response=TOTAL_WHITE
+        dataskin=pressed
+        baselineattrs=(thickness=0)
+        barwidth=0.5
+        ;
+    xaxis display=(nolabel noline noticks);
+    yaxis display=(noline) grid;
+    title9 'Number of African American and White graduates in each county during 2015-2016';
+run;
 title;
 footnote;
 
@@ -144,11 +190,11 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What is the percentage increase/decrease for Grade 12 boys enrollment from the year 2014 to 2016?'
+'Research Question: What is the percentage increase/decrease for Grade 7-12 boys enrollment from the year 2014 to 2016?'
 ;
 
 title2
-'Rationale: This would show us the trend for the graduation rate for Grade 12 boys from year 2014 to 2016.'
+'Rationale: This would show us the trend for the graduation rate for Grade 7-12 boys from year 2014 to 2016.'
 ;
 
 footnote1
@@ -164,7 +210,7 @@ footnote3
 ;
 
 footnote4
-'Our result shows that there is a 0.82% decrease in grade 12 boys enrollment.'
+'Our result shows that the percentage change in grade 7-12 boys enrollment are within 2%.'
 ;
 
 *
@@ -180,62 +226,11 @@ data, nor does it attempt to validate data in any ways.
 Followup Steps: Limit it to certain county and or race.
 Determine if trend support graduation rate of different enthic group.
 ;
-
-*
-By using proc sql, i created a new table called E12B_1415 to contain the
-total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
-is 1415.
-;
-proc sql;
-    create table E12B_1415 as
-        select
-            sum(E12) as tote_1415 
-                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
-        from
-            grad_drop_merged_sorted
-        where
-            GENDER='M' and
-            YEAR = 1415
-        ;
-quit;
-
-*
-By using proc sql, i created a new table called E12B_1516 to contain the
-total number of Grade 12 boys enrolled in the year 2015-2016.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
-is 1516.
-;
-proc sql;
-    create table E12B_1516 as
-        select 
-            sum(E12) as tote_1516 
-                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
-        from 
-            grad_drop_merged_sorted
-        where 
-            GENDER = 'M' and 
-            YEAR = 1516
-        ;
-quit;
-
-*
-By using proc sql, I calculated the percent change for Grade 12 boys
-enrollment using the simple rate change forumla.  I selected the total
-number of Grade 12 boys enrolled from the 2 datasets which contain the
-total number of boys enrolled in each year. I also formatted the percentage
-to be 2 decimal places.
-;
-proc sql;
-    select
-        (((select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change 
-            label = "Percentage Change of Boys' Enrollment from 2014-2016" 
-                format=percent7.2
-    from 
-        E12B_1415;
-quit;
+proc print
+    label
+    data=WH_g7_12dechange
+    ;
+run;
 
 title;
 footnote;
