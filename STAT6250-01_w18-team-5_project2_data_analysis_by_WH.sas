@@ -105,8 +105,8 @@ to present the total graduates in each counties.
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
-Followup Steps: Compare it to the 2015-2016 data.
-Maybe further investigate African American and White students graduation rate
+Followup Steps:Maybe further investigate African American 
+and White students graduation rate
 in LA County.
 ;
 
@@ -135,6 +135,28 @@ proc sgplot
     title9 'Number of African American and White graduates in each county during 2014-2015';
 run;
 
+title:
+footnote;
+
+title1
+'Research Question: Which county (column B) has the highest graduation rate in the year 2015-2016?'
+;
+
+title2
+'Rationale: This would show us which county did best in terms of graduation rate in the year 2015-2016.'
+;
+
+footnote1
+'Above shows a histogram of all the counties total number of graduates in the year 2015-2016.'
+;
+
+footnote2
+'From the graph we can see that the distribution amongest African American and White graduates is very similar to 2014-2015.'
+;
+
+footnote3
+'This shows a steady trend between the rate of graduation between African American and White students.'
+;
 *
 I wanted to show the county with the largest number of graduates.
 I chose to use sgplot to showcase the total number of graduates in
@@ -168,11 +190,11 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What is the percentage increase/decrease for Grade 12 boys enrollment from the year 2014 to 2016?'
+'Research Question: What is the percentage increase/decrease for Grade 7-12 boys enrollment from the year 2014 to 2016?'
 ;
 
 title2
-'Rationale: This would show us the trend for the graduation rate for Grade 12 boys from year 2014 to 2016.'
+'Rationale: This would show us the trend for the graduation rate for Grade 7-12 boys from year 2014 to 2016.'
 ;
 
 footnote1
@@ -214,11 +236,26 @@ to be 2 decimal places.
 ;
 proc sql;
     select
-        (((select tote_1516 From E12B_1516)-tote_1415)/tote_1415) as E12B_change 
-            label = "Percentage Change of Boys' Enrollment from 2014-2016" 
+        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) as E7B_change 
+            label = "Percentage Change of Grade 7 Boys' Enrollment from 2014-2016" 
                 format=percent7.2
+        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) as E8B_change 
+            label = "Percentage Change of Grade 8 Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) as E9B_change 
+            label = "Percentage Change of Grade 9 Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) as E10B_change 
+            label = "Percentage Change of Grade 10 Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+        (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415) as E11B_change 
+            label = "Percentage Change of Grade 11 Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+        (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415) as E12B_change 
+            label = "Percentage Change of Grade 12 Boys' Enrollment from 2014-2016" 
+                format=percent7.2        
     from 
-        E12B_1415;
+        E7_12B_1415;
 quit;
 
 title;
