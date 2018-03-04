@@ -1245,14 +1245,14 @@ proc sql;
                 label = "Total African American Grad 15-16", 
             (sum(WHITE)) as white_grad 
                 label = "Total White Grad 15-16", 
-            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) 
                 label = "African American Grad % 15-16" 
                     format = percent7.1,
-            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
+            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) 
                 label = "White Grad % 15-16" 
                     format = percent7.1
     from
-        grad1415_final
+        grad1516_final
     ;    
 quit;
 data african_white_grad_1416;
