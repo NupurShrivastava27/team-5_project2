@@ -1263,6 +1263,60 @@ data african_white_grad_1416;
 run;
 
 *
+Use PROC MEANS to generate a data set containing the total number of graduates
+from each county in AY2014-2015 (TOTAL_sum), as well as the total number of
+schools in each county (_FREQ_)
+;
+proc means
+        noprint
+        sum
+        data = grad1415_raw_sorted
+        nonobs
+    ;
+    var AFRICAN_AM, WHITE
+    ;
+    by COUNTY
+    ;
+    output
+        out=WH_grad1415_means
+        sum(AFRICAN_AM) = TOTAL_AFRICAN_AM
+        sum(WHITE) = TOTAL_WHITE
+    ;
+run;
+
+* Sort the data set created in the previous step by county;
+proc sort data=WH_grad1415_means out=WH_grad1415_means_sorted;
+    by COUNTY;
+run;
+
+*
+Use PROC MEANS to generate a data set containing the total number of graduates
+from each county in AY2014-2015 (TOTAL_sum), as well as the total number of
+schools in each county (_FREQ_)
+;
+proc means
+        noprint
+        sum
+        data = grad1516_raw_sorted
+        nonobs
+    ;
+    var AFRICAN_AM, WHITE
+    ;
+    by COUNTY
+    ;
+    output
+        out=WH_grad1516_means
+        sum(AFRICAN_AM) = TOTAL_AFRICAN_AM
+        sum(WHITE) = TOTAL_WHITE
+    ;
+run;
+
+* Sort the data set created in the previous step by county;
+proc sort data=WH_grad1516_means out=WH_grad1516_means_sorted;
+    by COUNTY;
+run;
+
+*
 By using proc sql, i created a new table called E12B_1415 to contain the
 total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
 the total number of boy by using the sum formula from the dataset 
