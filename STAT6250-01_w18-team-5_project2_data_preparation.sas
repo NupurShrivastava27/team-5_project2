@@ -352,9 +352,31 @@ run;
 * Begin data steps for JB analysis file;
 
 *
-Using the combined data set from the data prep file, generate a new data set
-containing the sums of enrollments (ETOT_sum) and dropouts (DTOT_sum) for each
-county, sorted by year and by county
+The first research question asks that we find the counties in California with
+the greatest increase in dropout rate from one year to the next. The second and
+third questions then explore additional details about the enrollment and dropout
+statistics of the five counties with the greatest increase in dropout rate.
+
+The final data set for the first research question (JB1_final) contains a record
+for each county in California, as well as the total number of students enrolled
+in each county in academic years 2014-2015 and 2015-2016, and the ratio of
+dropouts to enrollments in each county in each year. The change in dropout ratio
+is calculated for each county by subtracting the 2014-2015 dropout rate from the
+2015-2016 dropout rate. The data set is sorted based upon the change in dropout
+rate.
+;
+
+*
+JB1_step1
+
+To find the counties with the greatest increase in dropout rate, we first need
+to find the total numbers of enrollments and dropouts for each county in each
+year.
+
+Using the combined data set, generate a new data set in with the number of
+enrollments (ETOT) and dropouts (DTOT) for each ethnic group and gender at each
+school is summed up into new variables for enrollments (ETOT_sum) and dropouts
+(DTOT_sum) for each county, sorted by year and by county.
 ;
 proc means
         noprint
@@ -371,20 +393,28 @@ proc means
         COUNTY
     ;
     output
-        out=JB0_data
+        out=JB1_step1
         sum(ETOT DTOT) = ETOT_sum DTOT_sum
     ;
 ;
 run;
 
 *
+JB1_step2
+
+The next step is to start calculating the dropout ratios for each year. We do
+not need all of the fields created in the previous step, so we need to create a
+new data set that contains the fields that we want to keep, and also calculate
+the dropout ratios for each year for eventual calculation of the change in
+dropout ratio from year to year. This step is to complete this for AY2014-2015.
+
 From the data set generated in the previous PROC MEANS step, generate a new
 data set that includes only the year, county, enrollment total, dropout total,
 and calculated dropout ratio (dropout_ratio_1415) for each county, excluding
 any counties in which enrollment is very low (less than 50 students total), and
-only choosing data for AY2014-2015
+only choosing data for AY2014-2015.
 ;
-data JB1_data1415;
+data JB1_step2;
     retain
         YEAR
         COUNTY
@@ -399,7 +429,7 @@ data JB1_data1415;
         DTOT_sum_1415
         dropout_ratio_1415
     ;
-    set JB0_data(rename=(ETOT_sum=ETOT_sum_1415 DTOT_sum=DTOT_sum_1415));
+    set JB1_step1(rename=(ETOT_sum=ETOT_sum_1415 DTOT_sum=DTOT_sum_1415));
         dropout_ratio_1415 = DTOT_sum_1415/ETOT_sum_1415
     ;
     if
@@ -420,13 +450,20 @@ data JB1_data1415;
 run;
 
 *
+JB1_step3
+
+As with the previous step, we need to calculate the dropout ratio, this time for
+AY2015-2016. This happens in two separate steps so that we can easily merge the
+two data sets horizontally when calculating the change in dropout ratio year
+over year.
+
 From the data set generated in the previous PROC MEANS step, generate a new
 data set that includes only the year, county, enrollment total, dropout total,
 and calculated dropout ratio (dropout_ratio_1516) for each county, excluding
 any counties in which enrollment is very low (less than 50 students total), and
-only choosing data for AY2015-2016
+only choosing data for AY2015-2016.
 ;
-data JB1_data1516;
+data JB1_step3;
     retain
         YEAR
         COUNTY
@@ -441,7 +478,7 @@ data JB1_data1516;
         DTOT_sum_1516
         dropout_ratio_1516
     ;
-    set JB0_data(rename=(ETOT_sum=ETOT_sum_1516 DTOT_sum=DTOT_sum_1516));
+    set JB1_step1(rename=(ETOT_sum=ETOT_sum_1516 DTOT_sum=DTOT_sum_1516));
         dropout_ratio_1516 = DTOT_sum_1516/ETOT_sum_1516
     ;
     if
@@ -462,25 +499,38 @@ data JB1_data1516;
 run;
 
 *
+JB1_step4
+
+With the dropout ratios for each year calculated, we can now calculate the
+change in dropout ratio from AY2014-2015 to AY2015-2016 so that we can
+eventually find the counties with the highest increase in dropout ratio.
+
 Merge the data sets created in the previous two steps to create a new data set
 that includes all the data from the previous steps as well as a new calculated
 value, change_in_dropout_ratio, which is the dropout ratio from AY2015-2016
-minus the dropout ratio from AY2014-2015
+(dropout_ratio_1516) minus the dropout ratio from AY2014-2015
+(dropout_ratio_1415).
 ;
-data JB1_merged;
+data JB1_step4;
     retain
         COUNTY
         ETOT_sum_1415
-        DTOT_sum_1415
         dropout_ratio_1415
         ETOT_sum_1516
-        DTOT_sum_1516
+        dropout_ratio_1516
+        change_in_dropout_ratio
+    ;
+    keep
+        COUNTY
+        ETOT_sum_1415
+        dropout_ratio_1415
+        ETOT_sum_1516
         dropout_ratio_1516
         change_in_dropout_ratio
     ;
     merge
-        JB1_data1415
-        JB1_data1516
+        JB1_step2
+        JB1_step3
     ;
     by
         COUNTY
@@ -490,24 +540,57 @@ data JB1_merged;
 run;
 
 *
+JB1_final
+
+To find the counties with the highest increase in dropout ratio, we need to sort
+the data created in previous steps by the change in dropout ratio. Because we
+want to get the counties with the highest increase, we need to sort the data in
+descending order.
+
 Sort the data set generated in the previous step by descending change in dropout
-ratio
+ratio (change_in_dropout_ratio).
 ;
 proc sort
-        data=JB1_merged
-        out=JB1_sorted
+        data=JB1_step4
+        out=JB1_final
     ;
     by
         descending change_in_dropout_ratio
     ;
 run;
 
+
 *
+The second research question seeks to compare the ratios of ethnic groups of
+students who graduated and who dropped out in AY2015-2016 in the five counties
+identified in the previous research question. The reasoning is, if there is no
+achievement gap between various ethnic groups within a county, we would expect
+the proportions of ethnic groups among students who graduated to roughly match
+the proportions among students who dropped out. If the proportions for a given
+ethnic group are much greater for students who dropped out compared to students
+who graduated, then we may be seeing evidence of the achievement gap for
+students within that ethnic group.
+
+To view the data about proportions of ethnic groups among graduations and
+dropouts, we need to create a data set that contains a unique record for each
+county and each ethnic group within that county, as well as variables that
+indicate within each county, what percentage of the graduate population belongs
+to each ethnic group, and what percentage of the students who dropped out
+belongs to each ethnic group.
+;
+
+*
+JB2_step01
+
+We need to calculate what percentage each ethnic group represents among the
+graduating classes in each county for AY2015-2016. To start this process, we
+need to isolate the records for the year and counties that interest us.
+
 Use PROC SQL to generate a new data set containing only the graduation data for
-AY2015-2016 for schools in counties with the highest change in dropout ratio
+AY2015-2016 for schools in counties with the highest change in dropout ratio.
 ;
 proc sql;
-    create table JB2_data2 as
+    create table JB2_step01 as
     select *
     from grad_all
     where COUNTY
@@ -518,16 +601,27 @@ proc sql;
 quit;
 
 *
+JB2_step02
+
+The records from the previous step include a separate line for each school.
+Because we are interested in the data from each county, we need to calculate
+the sums of graduates from each ethnic group for all schools within each county.
+We will eventually compare this data to similar data from the data sets
+pertaining to the number of dropouts, which is encoded differently from this
+data set. Because of this, the output data set creates new variables marked as
+"Code#" that corresponds to the ethnic codes in the data dictionary as they are
+used in the dropout data sets.
+
 Use PROC MEANS with the data set generated in the previous step to sum up the
 graduation numbers at each school by ethnicity and overall for each county,
 generating new columns named "Code#" corresponding to the ethnicity code as
 denoted in the data dictionary, and also as included in the data sets that
-pertain to student dropout rates
+pertain to student dropout rates.
 ;
 proc means
         noprint
         sum
-        data=JB2_data2
+        data=JB2_step01
         nonobs
     ;
     var
@@ -546,7 +640,7 @@ proc means
         COUNTY
     ;
     output
-        out=JB2_means2
+        out=JB2_step02
         sum(
             NOT_REPORTED    /* Code 0 */
             AM_IND          /* Code 1 */
@@ -563,39 +657,63 @@ proc means
 run;
 
 *
+JB2_step03
+
+The previous PROC MEANS step created an aggregate record that includes the sum
+of variables for all counties. We only need the sums from each county
+individually, so we use PROC SQL to create a new data set that excludes the
+records that are not needed.
+
 Use PROC SQL and the _TYPE_=1 condition to extract the lines from the previously
-created data set that include data specific to each county
+created data set that include data specific to each county.
 ;
 proc sql;
-    create table JB2_sorted3 as
-    select * from JB2_means2
+    create table JB2_step03 as
+    select * from JB2_step02
     where _TYPE_=1
     ;
 quit;
 
 *
-Because the dropout data is organized with columns containing county and
-ethnic code, we need to transpose the data set generated in the previous step
-so that the resulting data set contains graduation data with columns for
-county and ethnic code, along with the count of graduations for each of those
-combinations stored in "COL1"
+JB2_step04
+
+Once again we need to prepare the graduation data to eventually merge with the
+dropout data, so we transpose the previous data set so that each record contains
+the county, ethnic group code, and number of graduates who belong to that group
+within that county.
+
+The resulting data set contains graduation data with columns for county and
+ethnic code, along with the count of graduations for each of those combinations
+stored in "COL1".
 ;
-proc transpose data=JB2_sorted3 out=JB2_sorted4;
+proc transpose data=JB2_step03 out=JB2_step04;
     by County;
 run;
 
 *
+JB2_step05
+
+Having transposed the graduation data in the previous step, we now need to
+remove additional variables that are unnecessary.
+
 Use PROC SQL to generate a new data set from the previous data set that excludes
-rows that do not include an ethnic code
+rows that do not include an ethnic code.
 ;
 proc sql;
-    create table JB2_sorted5 as
-    select * from JB2_sorted4
+    create table JB2_step05 as
+    select * from JB2_step04
     where _NAME_ not in ('YEAR', '_TYPE_', '_FREQ_', 'TOT_sum')
     ;
 quit;
 
 *
+JB2_step06
+
+The final data set that we are trying to create contains a variable that
+indicates what percentage of the graduating class of AY2015-2016 is comprised of
+each ethnic group, so that we can compare that percentage to the percentage of
+students who dropped out who belong to each ethnic group.
+
 Use PROC FREQ to generate a new data set from the previous data set that adds
 a column (PERCENT). For each county, the total number of graduations in
 AY2015-2016 is calculated, and then the number of graduates of each ethnicity
@@ -607,13 +725,20 @@ set, COUNTY is "Inyo", _NAME_ is "Code5", and PERCENT is approximately 72.98.
 According to the data dictionary, ethnic code 5 corresponds to Hispanic. This
 means that in Inyo County, 72.98% of the graduates in 2016 were Hispanic.
 ;
-proc freq data=JB2_sorted5 noprint;
-   tables _NAME_ / out=JB2_sorted8;
+proc freq data=JB2_step05 noprint;
+   tables _NAME_ / out=JB2_step06;
    weight COL1;
    by COUNTY ;
 run;
 
 *
+JB2_step07
+
+Once again, we need to remove any variables that will not be used in the final
+data set. Also, because we plan to merge the graduation data with the dropout
+data, we need to create a new column that includes the single digit code for
+each ethnic group.
+
 Create a final data set for graduation data that drops the _NAME_ and COUNT
 columns, while creating a new column for a numerical representation of ethnic
 code (ETHNIC) that is created by using the substr() function to extract the
@@ -621,19 +746,23 @@ number from each "Code#" entry in the _NAME_ field. This step also renames
 PERCENT to Grad_percent to be more descriptive for when we later merge it with
 the data set that refers to the percentages of students who drop out.
 ;
-data JB2_sorted9(drop=_NAME_ COUNT);
-    set JB2_sorted8(rename=(Percent=Grad_percent));
+data JB2_step07(drop=_NAME_ COUNT);
+    set JB2_step06(rename=(Percent=Grad_percent));
     length ETHNIC 8;
     ETHNIC = substr(_NAME_,5,1);
 run;
 
 *
-Now that the graduation data set for the counties of interest has been created,
-use PROC SQL to start to prepare a data set containing data about the number
-of students who dropped out in AY2015-2016 in the counties in question
+JB2_step08
+
+The graduation data has been prepared, so the next step is to perform many of
+the same steps on the dropout data for the counties in question.
+
+Use PROC SQL to start to prepare a data set containing data about the number
+of students who dropped out in AY2015-2016 in the counties in question.
 ;
 proc sql;
-    create table drop_by_county as
+    create table JB2_step08 as
     select
         CDS_CODE,
         ETHNIC,
@@ -649,12 +778,17 @@ proc sql;
 quit;
 
 *
+JB2_step09
+
+In order to work with the data set created in the previous step, it must first
+be sorted.
+
 Sort the data set generated in the previous step by county and ethnic code,
-similar to the structure of the final graduation data set
+similar to the structure of the final graduation data set.
 ;
 proc sort
-        data=drop_by_county
-        out=drop_by_county1
+        data=JB2_step08
+        out=JB2_step09
     ;
     by
         COUNTY
@@ -663,13 +797,20 @@ proc sort
 run;
 
 *
+JB2_step10
+
+As with the graduation data, we need to calculate the total number of dropouts
+for each county and ethnic group within that county so that we can eventually
+determine the percentage of the population of dropouts represented by each
+ethnic group.
+
 Use PROC MEANS to calculate the total number of dropouts per county in
-AY2015-2016 (DTOT_by_county)
+AY2015-2016 (DTOT_by_county).
 ;
 proc means
         noprint
         sum
-        data=drop_by_county1
+        data=JB2_step09
         nonobs
     ;
     var
@@ -680,25 +821,38 @@ proc means
         ETHNIC
     ;
     output
-        out=drop_by_county2
+        out=JB2_step10
         sum(DTOT) = DTOT_by_county
     ;
 ;
 run;
 
 *
+JB2_step11
+
+The previous PROC MEANS step created more combinations of sums than we need, so
+we need to exclude any records that do not include sums by county by ethnic
+group. We do not need every variable generated in the previous step either, so
+we can choose only the variables that are needed.
+
 Use PROC SQL to generate a new data set from the previous data set that includes
-only the county, ethnic code, and total number of dropouts per county
+only the county, ethnic code, and total number of dropouts per county.
 ;
 proc sql;
-    create table drop_by_county3 as
+    create table JB2_step11 as
     select County, Ethnic, DTOT_by_county
-    from drop_by_county2
+    from JB2_step10
     where _TYPE_ = 3
     ;
 quit;
 
 *
+JB2_step12
+
+As with the graduation data set, we need to calculate what percentage of the
+population of students who dropped out within each county is associated with
+each ethnic group within that county.
+
 Use PROC FREQ to generate a new data set that includes a column PERCENT that
 represents the percentage of the total number of students who drop out in each
 county who belong to the ethnic group represented by the associated ethnic code.
@@ -707,33 +861,50 @@ and PERCENT is approximately 72.98. According to the data dictionary, ethnic
 code 5 corresponds to Hispanic. This means that in Inyo County, 72.98% of the
 students who dropped out in AY2015-2016 were Hispanic.
 ;
-proc freq data=drop_by_county3 noprint;
-   tables ETHNIC / out=drop_by_county4;
+proc freq data=JB2_step11 noprint;
+   tables ETHNIC / out=JB2_step12;
    weight DTOT_by_county;
    by COUNTY ;
 run;
 
 *
+JB2_step13
+
+We need to remove any extraneous variables and rename other variables so that
+they are unique when we merge this data set with the graduation data.
+
 Create a new data set from the previous data set that eliminates the COUNT
-column and renames PERCENT to Drop_percent to be more descriptive
+column and renames PERCENT to Drop_percent to be more descriptive.
 ;
-data drop_by_county5(drop=COUNT);
-    set drop_by_county4(rename=(Percent=Drop_percent));
+data JB2_step13(drop=COUNT);
+    set JB2_step12(rename=(Percent=Drop_percent));
 run;
 
 *
+JB2_step14
+
+Now that the graduation data and dropout data are in the same format, they can
+be merged together for use in the final graph.
+
 Create a data set that includes the proportions of graduates of each ethnicity
 in the graduating class in each county, as well as the proportions of
-ethnicities of students who drop out in each county
+ethnicities of students who drop out in each county.
 ;
-data JB2_final;
-    merge JB2_sorted9 drop_by_county5;
+data JB2_step14;
+    merge JB2_step07 JB2_step13;
     by COUNTY ETHNIC;
 run;
 
 *
+JB2_map
+
+The plot created in the analysis file for this question needs to be labeled for
+clarity, so we need to specify the attributes used in the final plot, including
+the color to be used with each variable and the full name of each ethnicity as
+indicated in the data dictionary.
+
 Create an attribute map for use in generating a bar plot that displays a
-different color for each ethnicity
+different color for each ethnicity.
 ;
 data JB2_map;
     retain linecolor "black";
@@ -754,11 +925,17 @@ data JB2_map;
 run;
 
 *
+JB2_step15
+
+We want to add a variable containing the full name of each ethnicity for use in
+the final plot and map it to the ethnic codes found in the data set created in
+previous steps. This will cause the final plot to be easier to read.
+
 Create a new data set containing the single digit ethnic code (ETHNIC) and the
 text of the ethnicity it represents (Ethnic_group) for use in the bar plot to
-be generated
+be generated.
 ;
-data JB2_partial1;
+data JB2_step15;
     informat Ethnic_group $20.;
     input ETHNIC Ethnic_group $;
     infile datalines delimiter='|';
@@ -776,29 +953,52 @@ data JB2_partial1;
 run;
 
 *
-Use PROC SQL to generate the final data set to be used to generate a bar plot
+JB2_final
+
+We need to merge the previously created data set containing graduation and
+dropout data with the one created in the previous step so that the new data set
+contains the full title of each ethnic group so make the final plot easier to
+read.
+
+Use PROC SQL to generate the final data set to be used to generate a bar plot.
 ;
 proc sql;
-    create table JB2_final1 as
+    create table JB2_final as
     select
         County,
-        /* JB2_final.Ethnic, */
         Ethnic_Group,
         Grad_percent,
         Drop_percent
-    from JB2_final left join JB2_partial1
-    on JB2_final.ETHNIC = JB2_partial1.ETHNIC
+    from JB2_step14 left join JB2_step15
+    on JB2_step14.ETHNIC = JB2_step15.ETHNIC
     ;
 quit;
 
+
 *
+The third and final research question seeks to identify at which grade level
+we see the greatest number of dropouts in the counties identified in the
+previous questions. The final data set contains the total number of dropouts
+from each grade level in each county. To create the data set, we need to
+separate the records from the counties of interest from the complete data set
+created in the earlier data preparation steps, and then sum up the number of
+dropouts by county and grade level.
+;
+
+*
+JB3_step1
+
+The complete data set contains variables for the number of dropouts at each
+grade level (D#) and for unidentifed grade levels (DUS). We only need these
+variables and the County variable for each record.
+
 Generate a new data set using the final data set created in the data prep file
 that contains only the county and number of dropouts for each grade level for
 every school in AY2015-2016, keeping only the records from the counties we found
-at the end of the first research question
+at the end of the first research question.
 ;
 proc sql;
-    create table JB3_data as
+    create table JB3_step1 as
     select County, D7, D8, D9, D10, D11, D12, DUS
     from grad_drop_merged_sorted
     where County
@@ -808,14 +1008,19 @@ proc sql;
 quit;
 
 *
+JB3_step2
+
+Again we are trying to calculate the total number of dropouts per grade level
+for each county, so we need to add up the counts and group by County.
+
 Use PROC MEANS to find the total number of students who dropped out in each
 grade level by county in AY2015-2016, saving the results in new columns D#_sum
-in which # represents the grade level
+in which # represents the grade level.
 ;
 proc means
         noprint
         sum
-        data=JB3_data
+        data=JB3_step1
         nonobs
     ;
     var
@@ -831,7 +1036,7 @@ proc means
         COUNTY
     ;
     output
-        out=JB3_means1
+        out=JB3_step2
         sum(D7 D8 D9 D10 D11 D12 DUS) =
             D7_sum
             D8_sum
@@ -845,26 +1050,37 @@ proc means
 run;
 
 *
+JB3_step3
+
+The previous PROC MEANS step creates more records than we need, including the
+sum of graduations for each level for all counties combined. We need to keep
+only the records with the County names and the total of dropouts for each grade.
+
 Use PROC SQL to extract only the county and totals of students who dropped out
 from each grade level (note that DUS_sum, which contained the total number of
 students from a grade other than 7-12 who dropped out, is dropped at this point
 because the count for this variable for each county in question is 0)
 ;
 proc sql;
-    create table JB3_means2 as
+    create table JB3_step3 as
     select County, D7_sum, D8_sum, D9_sum, D10_sum, D11_sum, D12_sum
-    from JB3_means1
+    from JB3_step2
     where _TYPE_=1
     ;
 quit;
 
 *
+JB3_final
+
+The only values needed for the final plot refer to the County name, the grade
+level, and the number of dropouts for each grade level in each county.
+
 Create a final data set that includes the name of the each county, the grade
 level, and the number of students who dropped out from that grade level in that
-county (Count), for use in the final bar chart
+county (Count), for use in the final bar chart.
 ;
 data JB3_final;
-    set JB3_means2;
+    set JB3_step3;
     keep
         County
         Grade
@@ -885,18 +1101,20 @@ run;
 
 * End data steps for JB analysis file;
 
+
+
 * Begin data steps for NS analysis file;
 
 *
-First, after combining all datasets during data preparation, use sum function 
-in sql procedure to have the totals of individual 9th,10th, 11th and 12th 
-graders from dataset Grad_drop_merged_sorted for AY 2014-2015 and 2015-2016. 
+First, after combining all datasets during data preparation, use sum function
+in sql procedure to have the totals of individual 9th,10th, 11th and 12th
+graders from dataset Grad_drop_merged_sorted for AY 2014-2015 and 2015-2016.
 ;
 proc sql;
     create table
         enroll_drops as
-    select 
-        YEAR, 
+    select
+        YEAR,
         sum(E9) format=comma14.  as Enroll_GradeNine,
         sum(E10) format=comma14. as Enroll_GradeTen,
         sum(E11) format=comma14. as Enroll_GradeEleven,
@@ -905,7 +1123,7 @@ proc sql;
         sum(D10) format=comma14. as Dropout_GradeTen,
         sum(D11) format=comma14. as Dropout_GradeEleven,
         sum(D12) format=comma14. as Dropout_GradeTwelth
-    from 
+    from
         Grad_drop_merged_sorted
     where
         YEAR is not missing
@@ -915,58 +1133,58 @@ proc sql;
 quit;
 
 *
-Then populate the correct values using array function to provide table lookups 
+Then populate the correct values using array function to provide table lookups
 in the temprary dataset
 ;
-data enrolls_prep; 
-    set 
+data enrolls_prep;
+    set
         enroll_drops
-    ; 
-    array 
-        enroll_drops[4] 
+    ;
+    array
+        enroll_drops[4]
         Enroll_GradeNine--Enroll_GradeTwelth
-    ; 
+    ;
     do I=1 to 4
-    ; 
+    ;
         Enrollments=enroll_drops(i)
-    ; 
+    ;
     output
-    ; 
+    ;
     end
-    ; 
-    keep 
-        Enrollments; 
+    ;
+    keep
+        Enrollments;
 run;
- 
-data drops_prep; 
-    set 
-        enroll_drops
-    ; 
-    array 
-        enroll_drops[4] 
-        Dropout_GradeNine--Dropout_GradeTwelth
-    ; 
-    do I=1 to 4
-    ; 
-        Dropouts=enroll_drops(i)
-    ; 
-    output
-    ; 
-    end
-    ; 
-    keep 
-        Dropouts
-    ; 
-run; 
 
-data enrolls_drops_years 
-    ; 
-    input  
-        YEAR 
-        Graders  
-    ; 
-    datalines 
-    ; 
+data drops_prep;
+    set
+        enroll_drops
+    ;
+    array
+        enroll_drops[4]
+        Dropout_GradeNine--Dropout_GradeTwelth
+    ;
+    do I=1 to 4
+    ;
+        Dropouts=enroll_drops(i)
+    ;
+    output
+    ;
+    end
+    ;
+    keep
+        Dropouts
+    ;
+run;
+
+data enrolls_drops_years
+    ;
+    input
+        YEAR
+        Graders
+    ;
+    datalines
+    ;
         1415 09
         1415 10
         1415 11
@@ -975,45 +1193,45 @@ data enrolls_drops_years
         1516 10
         1516 11
         1516 12
-    ; 
+    ;
 
 *
 Merging two datasets from array into new enroll_years dataset
 ;
-data enroll_years; 
-    merge 
-        enrolls_drops_years  
+data enroll_years;
+    merge
+        enrolls_drops_years
         enrolls_prep
-    ; 
-run; 
+    ;
+run;
 
 *
 Merging two datasets from array into new drop_years dataset
 ;
-data drop_years; 
-    merge 
+data drop_years;
+    merge
         enrolls_drops_years
         drops_prep
-    ; 
+    ;
 run;
 
 data Enroll_drop_1416;
-    set 
+    set
         enroll_years
     ;
-    set 
+    set
         drop_years
     ;
 run;
 
 *
-First, use sum function to the columns 'ETOT' and 'DTOT' 
-in mean procedure from sorted datset 'grad_drop_merged_sorted' for 
+First, use sum function to the columns 'ETOT' and 'DTOT'
+in mean procedure from sorted datset 'grad_drop_merged_sorted' for
 AY 2014-2015-2016
 ;
 proc means
     noprint
-    data=grad_drop_merged_sorted 
+    data=grad_drop_merged_sorted
     sum MAXDEC=2
     ;
     label
@@ -1021,7 +1239,7 @@ proc means
         DTOT = 'Total Dropouts'
         YEAR = 'Year'
         GENDER = 'Gender'
-    ;  
+    ;
     var
         ETOT
         DTOT
@@ -1035,160 +1253,160 @@ proc means
         sum(ETOT DTOT) = Enrollments Dropouts
     ;
 run;
- 
+
 data ns2_enrol_drop_gender
     ;
-    set 
+    set
         enrol_drop_gender
     ;
-    if 
-        cmiss(of _all_) 
-    then 
+    if
+        cmiss(of _all_)
+    then
         delete
     ;
 run;
 
 *
-After combining grads1415 and grads1516 during data preparation,  
+After combining grads1415 and grads1516 during data preparation,
 first, use sum function in sql procedure in order to calculate percentage using
-columns HISPANIC, AM_IND, ASIAN, PAC_ISLD, FILIPINO, AFRICAN_AM, WHITE, 
-TWO_MORE_RACES, NOT_REPORTED and TOTAL from GRAD1415_RAW and GRAD1516_RAW 
+columns HISPANIC, AM_IND, ASIAN, PAC_ISLD, FILIPINO, AFRICAN_AM, WHITE,
+TWO_MORE_RACES, NOT_REPORTED and TOTAL from GRAD1415_RAW and GRAD1516_RAW
 datasets.
 ;
-proc sql; 
-    create table 
-        ethnic_1415 as 
-    select 
-        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
-        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
-        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
-        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
-        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
-        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
-        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
-        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
-        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
-    from 
+proc sql;
+    create table
+        ethnic_1415 as
+    select
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2,
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2,
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2,
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2,
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2,
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2,
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2,
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2,
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2
+    from
         GRAD1415_RAW
-    ; 
-quit; 
+    ;
+quit;
 
-proc sql; 
-    create table ethnic_1516 as 
-    select  
-        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2, 
-        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2, 
-        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2, 
-        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2, 
-        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2, 
-        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2, 
-        sum(WHITE) / SUM(TOTAL) as While format=percent8.2, 
-        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2, 
-        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2 
-    from 
-        Grad1516_RAW 
-    ; 
-quit; 
+proc sql;
+    create table ethnic_1516 as
+    select
+        sum(HISPANIC) / SUM(TOTAL) as Hisp format=percent8.2,
+        sum(AM_IND) / SUM(TOTAL) as Amid format=percent8.2,
+        sum(ASIAN) / SUM(TOTAL) as Asian format=percent8.2,
+        sum(PAC_ISLD) / SUM(TOTAL) as PacId format=percent8.2,
+        sum(FILIPINO) / SUM(TOTAL) as Filip format=percent8.2,
+        sum(AFRICAN_AM) / SUM(TOTAL) as AfricanAm format=percent8.2,
+        sum(WHITE) / SUM(TOTAL) as While format=percent8.2,
+        sum(TWO_MORE_RACES) / SUM(TOTAL) as TwoMoreRaces format=percent8.2,
+        sum(Not_REPORTED) / SUM(TOTAL) as NotReported format=percent8.2
+    from
+        Grad1516_RAW
+    ;
+quit;
 
 *
-Created new dataset with raw data with the input statement.Then used arrays 
-function to provide table lookups and sort the final temporary dataset to 
+Created new dataset with raw data with the input statement.Then used arrays
+function to provide table lookups and sort the final temporary dataset to
 print in a tabular format.
 ;
-data grad_ethnic_cat; 
-    input  
-        Ethnic_Category $25. 
-    ; 
-    datalines 
-    ; 
+data grad_ethnic_cat;
+    input
+        Ethnic_Category $25.
+    ;
+    datalines
+    ;
         Hispanic
         AmericanInd
         Asian
         PacificIsld
-        Filipino  
+        Filipino
         AfricanAmerican
-        White   
+        White
         MoreRaces
         NotReported
-    ; 
+    ;
 
-data grad_ethnic_value; 
-    set 
+data grad_ethnic_value;
+    set
         ethnic_1415
-    ; 
-    array 
-        ethnic_1415[9] 
+    ;
+    array
+        ethnic_1415[9]
         Hisp--NotReported
-    ; 
-    do 
+    ;
+    do
         I=1 to 9
     ;
         Ethnic_2014=ethnic_1415(i)
-    ; 
+    ;
     output
-    ; 
+    ;
     end
-    ; 
+    ;
     keep
         Ethnic_2014
-    ; 
+    ;
 run;
- 
-data grad_ethnic_value2; 
-    set 
+
+data grad_ethnic_value2;
+    set
         ethnic_1516
-    ; 
-    array 
+    ;
+    array
         ethnic_1516[9]
         Hisp--NotReported
-    ; 
+    ;
     do I=1 to 9
-    ; 
+    ;
         Ethnic_2015=ethnic_1516(i)
-    ; 
+    ;
     output
-    ; 
+    ;
     end
-    ; 
+    ;
     keep
-        Ethnic_2015 
-    ; 
-run; 
+        Ethnic_2015
+    ;
+run;
 
 *
 Merging two datasets from array into new grad_ethnic_final1 dataset
 ;
-data grad_ethnic_final1; 
-    merge 
+data grad_ethnic_final1;
+    merge
         grad_ethnic_cat
-        grad_ethnic_value 
-    ; 
+        grad_ethnic_value
+    ;
 run;
 
 *
 Merging two datasets from array into new grad_ethnic_final2 dataset
 ;
-data grad_ethnic_final2; 
-    merge 
+data grad_ethnic_final2;
+    merge
         grad_ethnic_cat
-        grad_ethnic_value2 
-    ; 
+        grad_ethnic_value2
+    ;
 run;
 
 data Grad_ethnic_1416;
-    set 
+    set
         grad_ethnic_final1
     ;
-    format 
+    format
         ethnic_2014  percent8.2
     ;
     label
         Ethnic_2014='Ethnic(2014-2015)'
     ;
-    set 
+    set
         grad_ethnic_final2
     ;
-    format 
+    format
         ethnic_2015  percent8.2
     ;
     label
@@ -1197,17 +1415,17 @@ data Grad_ethnic_1416;
 run;
 
 *
-Use proc sort to create a temporary sorted table in descending by 
+Use proc sort to create a temporary sorted table in descending by
 ethnic_2014 and ethnic_2015 and populate the final sorted observation
 into Grad_ethnic_1416_sorted.
 ;
-proc sort 
-    data=Grad_ethnic_1416 
+proc sort
+    data=Grad_ethnic_1416
     out=Grad_ethnic_1416_sorted
     ;
     by descending
-        ethnic_2014 
-        ethnic_2015 
+        ethnic_2014
+        ethnic_2015
     ;
 run;
 

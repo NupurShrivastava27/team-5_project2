@@ -50,6 +50,27 @@ footnote3
 ;
 
 *
+The first research question asks that we find the counties in California with
+the greatest increase in dropout rate from one year to the next. The second and
+third questions then explore the
+
+The final data set for the first research question (JB1_final) contains a record
+for each county in California, as well as the total number of students enrolled
+in each county in academic years 2014-2015 and 2015-2016, and the ratio of
+dropouts to enrollments in each county in each year. The change in dropout ratio
+is calculated for each county by subtracting the 2014-2015 dropout rate from the
+2015-2016 dropout rate. The data set is sorted based upon the change in dropout
+rate.
+
+The research question asks that we find the counties in California with the
+greatest increase in dropout rate from one year to the next.
+;
+
+*
+Note: This compares the columns dropout_ratio_1516 and dropout_ratio_1415,
+storing the difference between the two in the column change_in_dropout_ratio,
+sorts by that column in descending order, and displays the top five records.
+
 Methodology: Using the merged data set, we extract the sum of enrollments and
 dropouts for each county using PROC MEANS. From there, we separate the output
 into two separate data sets, one for each year, and we calculate the dropout
@@ -76,7 +97,7 @@ ratio from AY2014-2015 to AY2015-2016
 proc print
         noobs
         label
-            data = JB1_sorted(obs=5)
+            data = JB1_final(obs=5)
     ;
     var
         COUNTY
@@ -117,26 +138,27 @@ footnote1
 ;
 
 footnote2
-'If there is no achievement gap, we would expect the ratio of ethnicities of the graduating class to be roughly similar to the ratio of ethnicities of students who have dropped out.'
-;
-
-footnote3
-'However, we can see that in each of these counties, there appears to be a large discrepancy between these ratios, which indicates that certain ethnic groups are more likely to drop out than others.'
-;
-
-footnote4
 'If the segment for a given ethnic group is much larger in the lower bar than in the upper bar, it indicates that within that county, members of that ethnic group drop out in greater proportion than they graduate, which could indicate an achievement gap between members of that group and the rest of the population in that county.'
 ;
 
-footnote5
-'In this case, we see that in San Francisco County, the proportions of Hispanic and African American students who drop out is significantly higher than the proportions of those who graduate.'
+footnote3
+'We can see that in several of these counties, there appears to be a large discrepancy between these ratios, showing evidence of an achievement gap.'
 ;
 
-footnote6
+footnote4
+'For example, in San Francisco County, the proportions of Hispanic and African American students who drop out is significantly higher than the proportions of those who graduate.'
+;
+
+footnote5
 'We can also observe a disparity in Tehama county, where the proportion of Hispanic students who drop out is much higher than the proportion of Hispanic students who graduate.'
 ;
 
 *
+Note: This compares the columns Grad_Percent, representing the percentages of
+the graduation population in each county that belongs to each ethnic group,
+and Drop_Percent, representing the same for the population of students who
+dropped out.
+
 Methodology: Create a new data set from the graduation data set which only
 includes the counties from the previous step and the 2015-2016 academic year.
 Then calculate the total graduation and dropout rates for each ethnicity in
@@ -167,7 +189,7 @@ while the bottom bar shows the proportions of ethnicities of the total
 population of students who have dropped out in AY2015-2016 in each county
 ;
 ods graphics on / height=8in;
-proc sgplot data=JB2_final1 dattrmap=JB2_map;
+proc sgplot data=JB2_final dattrmap=JB2_map;
     hbarparm category=County response=Grad_Percent /
         group=Ethnic_group grouporder=data groupdisplay=stack
         discreteoffset=-0.17 barwidth=.3 attrid=eth dataskin=pressed;
@@ -209,6 +231,10 @@ footnote3
 ;
 
 *
+Note: This compares the sums of columns D7, D8, D9, D10, D11, and D12 from
+dropouts1516 for the counties with the greatest increase in dropout rate as
+determined in the first research question.
+
 Methodology: Using the original merged data set, create a subset and sum up
 the dropouts by grade level for each county, and display the total number of
 dropouts per grade level in a horizontal bar chart.
