@@ -1273,7 +1273,7 @@ proc means
         data = grad1415_raw_sorted
         nonobs
     ;
-    var AFRICAN_AM, WHITE
+    var AFRICAN_AM WHITE
     ;
     by COUNTY
     ;
@@ -1300,7 +1300,7 @@ proc means
         data = grad1516_raw_sorted
         nonobs
     ;
-    var AFRICAN_AM, WHITE
+    var AFRICAN_AM WHITE
     ;
     by COUNTY
     ;
