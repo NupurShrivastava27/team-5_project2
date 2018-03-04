@@ -30,15 +30,15 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What is the graduation rate of between African American vs White in the year 2014-2015'
+'Research Question: What is the graduation rate between African American vs White in the year 2014-2016'
 ;
 
 title2
-'Rationale: This shows the difference graduation rate between Afircan American and White students in the year 2014-2015.'
+'Rationale: This shows the difference graduation rate between Afircan American and White students in the year 2014-2016.'
 ;
 
 footnote1
-'Above result shows the total number of graduates of African American and White student on the year 2014-2015 and their percentage'
+'Above result shows the total number of graduates of African American and White student on the year 2014-2016 and their percentage'
 ;
 
 footnote2
@@ -47,41 +47,25 @@ footnote2
 
 *
 Note: This compares these columns "AFRICAN_AM, WHITE" from 
-grad1415_final to the same "TOTAL_SUM" from grad1415_means_sorted.
+grad1415_final to the same "TOTAL_SUM" from
+grad1415_means_sorted and grad1516_means_sorted.
 
 Methodology: After combining all datasets during data preparation, use sum in 
 proc sql to produce the totals graduates of African American and White students.
-Then divide the sum from the total number of gradautes in the year 2014-2015.
+Then divide the sum from the total number of gradautes
+in the year 2014-2015 and 2015-2016.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
 
-Followup Steps: Compare it to the 2015-2016 data.
-Possbile perfrom hypothesis testing to determine if disrepancy is significant.
+Followup Steps: Possbile perfrom hypothesis testing to determine
+if disrepancy is significant.
 ;
 
-*
-Using proc sql, i calculated the sum of the column AFRICAN_AM and WHITE
-then also calculate their percentage by using the total graduates number 
-from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
-2 decimal places.
-; 
-proc sql;
-    select 
-        (sum(AFRICAN_AM)) as african_grad 
-            label = "Total African American Grad", 
-        (sum(WHITE)) as white_grad 
-            label = "Total White Grad", 
-        (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
-            label = "African American Grad %" 
-                format = percent7.1,
-        (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) 
-            label = "White Grad %" 
-                format = percent7.1
-    from
-        grad1415_final
-    ;    
-quit;
+proc print
+    data = african_white_grad_1416
+    ;
+run;
 
 title;
 footnote;
