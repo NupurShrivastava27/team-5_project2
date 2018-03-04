@@ -226,37 +226,11 @@ data, nor does it attempt to validate data in any ways.
 Followup Steps: Limit it to certain county and or race.
 Determine if trend support graduation rate of different enthic group.
 ;
-
-*
-By using proc sql, I calculated the percent change for Grade 12 boys
-enrollment using the simple rate change forumla.  I selected the total
-number of Grade 12 boys enrolled from the 2 datasets which contain the
-total number of boys enrolled in each year. I also formatted the percentage
-to be 2 decimal places.
-;
-proc sql;
-    select
-        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) as E7B_change 
-            label = "Percentage Change of Grade 7 Boys' Enrollment from 2014-2016" 
-                format=percent7.2,
-        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) as E8B_change 
-            label = "Percentage Change of Grade 8 Boys' Enrollment from 2014-2016" 
-                format=percent7.2,
-        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) as E9B_change 
-            label = "Percentage Change of Grade 9 Boys' Enrollment from 2014-2016" 
-                format=percent7.2,
-        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) as E10B_change 
-            label = "Percentage Change of Grade 10 Boys' Enrollment from 2014-2016" 
-                format=percent7.2,
-        (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415) as E11B_change 
-            label = "Percentage Change of Grade 11 Boys' Enrollment from 2014-2016" 
-                format=percent7.2,
-        (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415) as E12B_change 
-            label = "Percentage Change of Grade 12 Boys' Enrollment from 2014-2016" 
-                format=percent7.2        
-    from 
-        E7_12B_1415;
-quit;
+proc print
+    label
+    data=WH_g7_12dechange
+    ;
+run;
 
 title;
 footnote;
