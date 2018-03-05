@@ -1490,7 +1490,6 @@ proc means
         sum
         data = grad1415_raw_sorted
         nonobs
-        obs = 5
     ;
     var AFRICAN_AM WHITE
     ;
