@@ -1490,6 +1490,7 @@ proc means
         sum
         data = grad1415_raw_sorted
         nonobs
+        obs = 5
     ;
     var AFRICAN_AM WHITE
     ;
@@ -1533,6 +1534,28 @@ run;
 proc sort data=WH_grad1516_means out=WH_grad1516_means_sorted;
     by COUNTY;
 run;
+
+proc sql outobs=5;
+    create table WH_grad1415_top5 as
+    select
+        *
+    from
+        WH_grad1415_means_sorted
+    order by
+        _FREQ_ desc
+    ;
+quit;
+
+proc sql outobs=5;
+    create table WH_grad1516_top5 as
+    select
+        *
+    from
+        WH_grad1516_means_sorted
+    order by
+        _FREQ_ desc
+    ;
+quit;
 
 *
 By using proc sql, i created a new table called E12B_1415 to contain the
