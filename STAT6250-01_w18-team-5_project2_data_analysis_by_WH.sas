@@ -214,11 +214,12 @@ footnote4
 ;
 
 *
-Note: This compares the changes in enrollment rate of Grad 12 boys from 2014-2016.
+Note: This compares the changes in enrollment rate of 
+Grade 7-12 boys from 2014-2016.
 
-Methodology: Using Proc SQL, we create 2 tables which contain the the sum of 
-grade 12 boys enrollment  from each year.  Then i calculated the percentage change
-by selecting the total from each table.
+Methodology: Using Proc SQL, we create 2 tables which contain the sum of 
+grade 12 boys enrollment  from each year.  Then i calculated the 
+percentage change by selecting the total from each table.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
