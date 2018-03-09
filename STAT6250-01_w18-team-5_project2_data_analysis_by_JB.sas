@@ -115,6 +115,13 @@ proc print
         dropout_ratio_1516='2015-2016 Dropouts per Enrollments'
         change_in_dropout_ratio='Change in Dropouts per Enrollments'
     ;
+    format
+        ETOT_sum_1415 comma9.
+        dropout_ratio_1415 percent9.2
+        ETOT_sum_1516 comma9.
+        dropout_ratio_1516 percent9.2
+        change_in_dropout_ratio percent9.2
+    ;
 run;
 
 title;
