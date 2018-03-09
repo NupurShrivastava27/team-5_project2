@@ -84,8 +84,12 @@ title2
 'Rationale: This would show us which county did best in terms of graduation rate in the year 2014-2015.'
 ;
 
+title3
+'Number of African American and White graduates in each county during 2014-2015'
+;
+
 footnote1
-'Above shows a histogram of all the counties total number of graduates in the year 2014-2015.'
+'Above shows a histogram of the top 5 counties with the highest number of graduates in the year 2014-2015.'
 ;
 
 footnote2
@@ -118,12 +122,11 @@ would clearly show which county has a highest number of graduates.
 ;
 proc sgplot
     noborder
-    data=WH_grad1415_means_sorted;
+    data=WH_grad1415_top5;
     styleattrs datacolors=(red grey);
     hbar county / response=TOTAL_AFRICAN_AM
         dataskin=pressed
         baselineattrs=(thickness=0)
-        barwidth=1
         ;
     hbar county / response=TOTAL_WHITE
         dataskin=pressed
@@ -132,7 +135,6 @@ proc sgplot
         ;
     xaxis display=(nolabel noline noticks);
     yaxis display=(noline) grid;
-    title9 'Number of African American and White graduates in each county during 2014-2015';
 run;
 
 title:
@@ -146,8 +148,12 @@ title2
 'Rationale: This would show us which county did best in terms of graduation rate in the year 2015-2016.'
 ;
 
+title3
+'Number of African American and White graduates in each county during 2015-2016'
+;
+
 footnote1
-'Above shows a histogram of all the counties total number of graduates in the year 2015-2016.'
+'Above shows a histogram of the top 5 counties with the highest number of graduates in the year 2015-2016.'
 ;
 
 footnote2
@@ -165,12 +171,11 @@ would clearly show which county has a highest number of graduates.
 ;
 proc sgplot
     noborder
-    data=WH_grad1516_means_sorted;
+    data=WH_grad1516_top5;
     styleattrs datacolors=(red grey);
     hbar county / response=TOTAL_AFRICAN_AM
         dataskin=pressed
         baselineattrs=(thickness=0)
-        barwidth=1
         ;
     hbar county / response=TOTAL_WHITE
         dataskin=pressed
@@ -179,7 +184,6 @@ proc sgplot
         ;
     xaxis display=(nolabel noline noticks);
     yaxis display=(noline) grid;
-    title9 'Number of African American and White graduates in each county during 2015-2016';
 run;
 title;
 footnote;
@@ -214,11 +218,12 @@ footnote4
 ;
 
 *
-Note: This compares the changes in enrollment rate of Grad 12 boys from 2014-2016.
+Note: This compares the changes in enrollment rate of 
+Grade 7-12 boys from 2014-2016.
 
-Methodology: Using Proc SQL, we create 2 tables which contain the the sum of 
-grade 12 boys enrollment  from each year.  Then i calculated the percentage change
-by selecting the total from each table.
+Methodology: Using Proc SQL, we create 2 tables which contain the sum of 
+grade 12 boys enrollment  from each year.  Then i calculated the 
+percentage change by selecting the total from each table.
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.

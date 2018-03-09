@@ -1446,10 +1446,14 @@ proc sql;
                 label = "Total African American Grad 14-15", 
             (sum(WHITE)) as white_grad_1415
                 label = "Total White Grad 14-15", 
-            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) as african_grad_per_1415
+            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum)) 
+                from grad1415_means_sorted)) 
+                as african_grad_per_1415
                 label = "African American Grad % 14- 15" 
                     format = percent7.1,
-            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1415_means_sorted)) as white_grad_per_1415
+            (sum(WHITE)/(select (sum(TOTAL_sum)) 
+                from grad1415_means_sorted)) 
+                as white_grad_per_1415
                 label = "White Grad % 14-15" 
                     format = percent7.1
     from
@@ -1463,10 +1467,14 @@ proc sql;
                 label = "Total African American Grad 15-16", 
             (sum(WHITE)) as white_grad_1516
                 label = "Total White Grad 15-16", 
-            (sum(AFRICAN_AM) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) as african_grad_per_1516
+            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum)) 
+                from grad1516_means_sorted)) 
+                as african_grad_per_1516
                 label = "African American Grad % 15-16" 
                     format = percent7.1,
-            (sum(WHITE) / (select (sum(TOTAL_sum)) from grad1516_means_sorted)) as white_grad_per_1516
+            (sum(WHITE)/(select (sum(TOTAL_sum)) 
+                from grad1516_means_sorted)) 
+                as white_grad_per_1516
                 label = "White Grad % 15-16" 
                     format = percent7.1
     from
@@ -1533,6 +1541,28 @@ run;
 proc sort data=WH_grad1516_means out=WH_grad1516_means_sorted;
     by COUNTY;
 run;
+
+proc sql outobs=5;
+    create table WH_grad1415_top5 as
+    select
+        *
+    from
+        WH_grad1415_means_sorted
+    order by
+        _FREQ_ desc
+    ;
+quit;
+
+proc sql outobs=5;
+    create table WH_grad1516_top5 as
+    select
+        *
+    from
+        WH_grad1516_means_sorted
+    order by
+        _FREQ_ desc
+    ;
+quit;
 
 *
 By using proc sql, i created a new table called E12B_1415 to contain the
@@ -1604,23 +1634,29 @@ to be 2 decimal places.
 proc sql;
     create table WH_g7_12dechange as
     select
-        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) as E7B_change 
-            label = "Percentage Change of Grade 7 Boys' Enrollment from 2014-2016" 
+        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) 
+            as E7B_change 
+            label = "%Change of Grade 7 Boys' Enrollment from 2014-2016" 
                 format=percent7.2,
-        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) as E8B_change 
-            label = "Percentage Change of Grade 8 Boys' Enrollment from 2014-2016" 
+        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) 
+            as E8B_change 
+            label = "%Change of Grade 8 Boys' Enrollment from 2014-2016" 
                 format=percent7.2,
-        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) as E9B_change 
-            label = "Percentage Change of Grade 9 Boys' Enrollment from 2014-2016" 
+        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) 
+            as E9B_change 
+            label = "%Change of Grade 9 Boys' Enrollment from 2014-2016" 
                 format=percent7.2,
-        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) as E10B_change 
-            label = "Percentage Change of Grade 10 Boys' Enrollment from 2014-2016" 
+        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) 
+            as E10B_change 
+            label = "%Change of Grade 10 Boys' Enrollment from 2014-2016" 
                 format=percent7.2,
-        (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415) as E11B_change 
-            label = "Percentage Change of Grade 11 Boys' Enrollment from 2014-2016" 
+        (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415)
+            as E11B_change 
+            label = "%Change of Grade 11 Boys' Enrollment from 2014-2016" 
                 format=percent7.2,
-        (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415) as E12B_change 
-            label = "Percentage Change of Grade 12 Boys' Enrollment from 2014-2016" 
+        (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415)
+            as E12B_change 
+            label = "%Change of Grade 12 Boys' Enrollment from 2014-2016" 
                 format=percent7.2        
     from 
         E7_12B_1415;
