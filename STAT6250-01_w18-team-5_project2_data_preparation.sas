@@ -1180,8 +1180,8 @@ run;
 data enrolls_drops_years
     ;
     input
-        YEAR
-        Graders
+        Year
+        Grade
     ;
     datalines
     ;
@@ -1401,7 +1401,7 @@ data Grad_ethnic_1416;
         ethnic_2014  percent8.2
     ;
     label
-        Ethnic_2014='Ethnic(2014-2015)'
+        ethnic_2014='Ethnic(2014-2015)'
     ;
     set
         grad_ethnic_final2
@@ -1410,7 +1410,7 @@ data Grad_ethnic_1416;
         ethnic_2015  percent8.2
     ;
     label
-        Ethnic_2015='Ethnic(2015-2016)'
+        ethnic_2015='Ethnic(2015-2016)'
     ;
 run;
 
