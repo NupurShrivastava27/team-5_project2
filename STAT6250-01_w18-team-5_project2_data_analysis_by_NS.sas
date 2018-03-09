@@ -6,8 +6,13 @@
 *
 This file uses the following dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
+<<<<<<< HEAD
 at California public high schools by race, gender and schools AY14-15 and
 AY15-16.
+=======
+at California public high schools by race, gender and schools Academic Year 
+2015-2016.
+>>>>>>> 65ee7ed10b2b8deb11413a37b2cc5e0b21b04d1f
 
 Dataset Name: grad_drop_merged_sorted created in external file
 STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
