@@ -82,7 +82,7 @@ proc sgpanel
     panelby 
         Year 
     ;
-    rowaxis label ="Enrollments  and  Dropouts"
+    rowaxis label="Enrollments  and  Dropouts"
     ;
     vbar
         Grade / 
@@ -92,9 +92,9 @@ proc sgpanel
     ;
     vbar
         Grade / 
-            response =Dropouts 
+            response=Dropouts 
             DATALABEL
-            barwidth =0.5
+            barwidth=0.5
             transparency=0.2
     ;
 run;
@@ -157,21 +157,21 @@ proc sgpanel
     panelby
         YEAR 
     ;
-    rowaxis label ="Enrollments  Vs  Dropouts"
+    rowaxis label="Enrollments  Vs  Dropouts"
     ;
     vbar
         GENDER / 
             DATALABEL
-            response =Enrollments
+            response=Enrollments
             DATALABEL
             transparency =0.2
     ;
     vbar
         GENDER /
-            response =Dropouts
+            response=Dropouts
             DATALABEL
-            barwidth =0.5
-            transparency =0.2
+            barwidth=0.5
+            transparency=0.2
     ;
 run;
  
