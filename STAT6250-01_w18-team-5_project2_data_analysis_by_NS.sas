@@ -164,7 +164,7 @@ proc sgpanel
             DATALABEL
             response=Enrollments
             DATALABEL
-            transparency =0.2
+            transparency=0.2
     ;
     vbar
         GENDER /
