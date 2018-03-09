@@ -6,7 +6,7 @@
 *
 This file uses the following dataset to address several research
 questions regarding high school enrollments and dropouts and graduations trends
-at California pubilc high schools by race, gender and schools AY2014-2015-2016.
+at California public high schools by race, gender and schools AY2014-2015-2016.
 
 Dataset Name: grad_drop_merged_sorted created in external file
 STAT6250-01_w18-team-5_project2_data_preparation.sas, which is assumed to be
@@ -30,19 +30,19 @@ X "cd ""%substr(%sysget(SAS_EXECFILEPATH),1,%eval(%length(%sysget(SAS_EXECFILEPA
 *******************************************************************************;
 
 title1
-'Research Question: What are the total enrollments and dropouts of each gradres in CA high school ( 2014-2015-2016 )?'
+'Research Question: What are the total enrollments and dropouts of each grades in CA high school ( 2014-2015-2016 )?'
 ;
 
 title2
-'Rationale: This provides a comparison between total enrollments and dropouts of 9th to 12th graders in CA high school ( 2014-2015-2016 ).'
+'Rationale: This provides a comparison between total enrollments and dropouts of 9th to 12th graders in CA high school for AY 2014-2015-2016.'
 ;
 
 footnote1
-'Above result shows the bar graph of total enrollments and dropouts, sum total by counties and schools.'
+'Above result shows the bar graph of total enrollments and dropouts for academic years 2014-2015-2016. The total has been consolidated from all the CA high schools.'
 ;
 
 footnote2
-'Moreover, we can see a clear comparison between 2014-2016,i.e decrease in both enrollments and dropouts from 2014 to 2016.'
+'Moreover, we can see a general trend in decrease of both enrollments and dropouts for the two subsequent academic years.'
 ;
 
 *
@@ -53,9 +53,9 @@ Methodology: First, after combining all datasets during data preparation,
 use sum function in sql procedure to have the totals of individual 9th,
 10th, 11th and 12th graders from dataset Grad_drops_merge_sorted for 
 AY 2014-2015 and 2015-2016. Then populate the correct values using array 
-function to provide table lookups in the temprary dataset. Finally, 
-plot here a graph using proc sgpanel to dipict the total enrollments 
-and dropouts of each gradres in CA high school ( 2014-2015-2016 ).
+function to provide table lookups in the temporary dataset. Finally, 
+plot here a graph using proc sgpanel to depict the total enrollments 
+and dropouts of each graders in CA high school ( 2014-2015-2016 ).
 
 Limitations: This methodology does not account for any schools with missing 
 data, nor does it attempt to validate data in any ways.
@@ -68,7 +68,9 @@ enrollments and dropouts are not presented here in this graph.
 proc sgpanel 
     data=Enroll_drop_1416
     ;
-    title3 "Enrollments and Dropouts ( 2014-15-2016 .)"
+	title3 " "
+	;
+    title4 "Enrollments and Dropouts AY 2014-15-2016."
     ;
     format 
         Enrollments comma10.0
@@ -77,17 +79,17 @@ proc sgpanel
         Dropouts comma10.0
     ;
     panelby 
-        YEAR 
+        Year 
     ;
     rowaxis label="Enrollments  and  Dropouts"
     ;
     vbar
-        Graders / 
+        Grades / 
     response=Enrollments  DATALABEL
     transparency=0.2
     ;
     vbar
-        Graders / 
+        Grades / 
     response =Dropouts DATALABEL
     barwidth =0.5
     transparency=0.2
@@ -103,19 +105,19 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: What are the total male and female enrollments and dropouts ( 2014-15-2016 )?'
+'Research Question: What are the total male and female enrollments and dropouts in CA high school for academic years 2014-2015-2016?'
 ;
 
 title2
-'Rationale: This would help inform which gender has contributed the most in enrollments and dropouts AY2014-15-2016.'
+'Rationale: This would help analyze enrollments and dropouts based on gender.'
 ;
 
 footnote1
-'As can be seen, an decrease in numbers of female and male with respect to both enrollments and dropouts from 2014 to 2016.'
+'Above we can see there has been a decrease in total enrollments and dropouts for both genders in the two subsequest academic years. The total has been consolidated from all the CA high schools.'
 ;
 
 footnote2
-'However, we should know the reason of dropouts from AY 2014-2015-2016.'
+'It is alarming to see a decrease in enrollments in both genders. Further analysis should be done to find the root cause.'
 ;
 
 *
@@ -123,12 +125,12 @@ Note: This compares the columns "ETOT, DTOT" from dropouts1415
 to the same column from dropouts1516.
 
 Methodology: First, use sum function to the columns 'ETOT' and 'DTOT' 
-in mean procedure from sorted datset 'grad_drop_merged_sorted' for 
+in mean procedure from sorted dataset 'grad_drop_merged_sorted' for 
 AY 2014-2015-2016. Finally, here plot a graph using proc sgpanel which,
-dipict the total male and female enrollments and dropouts ( 2014-15-2016 ).
+depict the total male and female enrollments and dropouts ( 2014-15-2016 ).
 
 Limitations: This methodology does not account for any schools with missing 
-data, nor does it attempt to validate data in any ways.And this graphh does
+data, nor does it attempt to validate data in any ways and graph does
 not shows the ethnic categories of genders.Ethnic categories could help us
 to peek more into demographic data.
 
@@ -139,7 +141,9 @@ statistical technique like linear regression.
 proc sgpanel 
     data=ns2_enrol_drop_gender
     ;
-    title3 "Male and Female Enrollments and Dropouts AY2014-15-2016"
+	title3 ""
+	;
+    title4 "Enrollments and Dropouts by Gender, AY 2014-2015-2016"
     ;
     format 
         Enrollments comma10.0
@@ -180,15 +184,15 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: Provide the percentage of summer twelfth-grade graduates by ethnic demographic for AY1415-1516?'
+'Research Question: Provide the percentage of summer school graduates by ethnicity for AY 2014-2015-2016?'
 ;
 
 title2
-'Rationale: This graph shows a high level demographic information of summer school graduates of California schools.'
+'Rationale: This will provide us a high level demographic information of summer graduates from California schools.'
 ;
 
 footnote1
-'High percentage of graduation from summer twelth grade belongs to the Hispanic, White and African Americans.'
+'The result shows that the Hispanic ethnicity has the highest percentage of summer graduates followed by White and Asian.'
 ;
 
 footnote2
@@ -221,6 +225,8 @@ investigation should be performed to ensure no data errors are involved.
 
 proc print noobs 
     data=Grad_ethnic_1416_sorted
+    ;
+    label ethnic_2014='% of Ethnicity (2014-2015)'
     ;
 run;
 
