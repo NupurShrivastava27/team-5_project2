@@ -84,12 +84,12 @@ proc sgpanel
     rowaxis label="Enrollments  and  Dropouts"
     ;
     vbar
-        Grades / 
+        Grade / 
     response=Enrollments  DATALABEL
     transparency=0.2
     ;
     vbar
-        Grades / 
+        Grade / 
     response =Dropouts DATALABEL
     barwidth =0.5
     transparency=0.2
@@ -184,15 +184,15 @@ footnote;
 *******************************************************************************;
 
 title1
-'Research Question: Provide the percentage of summer school graduates by ethnicity for AY 2014-2015-2016?'
+'Research Question: Provide the percentage of twelfth-grade graduates by ethnicity for AY 2014-2015-2016?'
 ;
 
 title2
-'Rationale: This will provide us a high level demographic information of summer graduates from California schools.'
+'Rationale: This will provide us a high level demographic information of graduates from California schools by ethnicity.'
 ;
 
 footnote1
-'The result shows that the Hispanic ethnicity has the highest percentage of summer graduates followed by White and Asian.'
+'The result shows that the Hispanic ethnicity has the highest percentage of graduates followed by White and Asian.'
 ;
 
 footnote2
@@ -228,6 +228,8 @@ proc print noobs
     ;
     label ethnic_2014='% of Ethnicity (2014-2015)'
     ;
+	title3  ;
+	title4 'Percentage of Graduates by Ethnicity';
 run;
 
 title;
