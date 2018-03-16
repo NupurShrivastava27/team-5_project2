@@ -1435,51 +1435,51 @@ run;
 
 *
 Using proc sql, i calculated the sum of the column AFRICAN_AM and WHITE
-then also calculate their percentage by using the total graduates number 
+then also calculate their percentage by using the total graduates number
 from GRAD1415_MEANS_SORTED data set.  I also set the percentage to have
 2 decimal places.
-; 
+;
 proc sql;
     create table african_white_grad_1415 as
-        select 
-            (sum(AFRICAN_AM)) as african_grad_1415 
-                label = "Total African American Grad 14-15", 
+        select
+            (sum(AFRICAN_AM)) as african_grad_1415
+                label = "Total African American Grad 14-15",
             (sum(WHITE)) as white_grad_1415
-                label = "Total White Grad 14-15", 
-            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum)) 
-                from grad1415_means_sorted)) 
+                label = "Total White Grad 14-15",
+            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum))
+                from grad1415_means_sorted))
                 as african_grad_per_1415
-                label = "African American Grad % 14- 15" 
+                label = "African American Grad % 14- 15"
                     format = percent7.1,
-            (sum(WHITE)/(select (sum(TOTAL_sum)) 
-                from grad1415_means_sorted)) 
+            (sum(WHITE)/(select (sum(TOTAL_sum))
+                from grad1415_means_sorted))
                 as white_grad_per_1415
-                label = "White Grad % 14-15" 
+                label = "White Grad % 14-15"
                     format = percent7.1
     from
         grad1415_final
-    ;    
+    ;
 quit;
 proc sql;
     create table african_white_grad_1516 as
-        select 
+        select
             (sum(AFRICAN_AM)) as african_grad_1516
-                label = "Total African American Grad 15-16", 
+                label = "Total African American Grad 15-16",
             (sum(WHITE)) as white_grad_1516
-                label = "Total White Grad 15-16", 
-            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum)) 
-                from grad1516_means_sorted)) 
+                label = "Total White Grad 15-16",
+            (sum(AFRICAN_AM)/(select (sum(TOTAL_sum))
+                from grad1516_means_sorted))
                 as african_grad_per_1516
-                label = "African American Grad % 15-16" 
+                label = "African American Grad % 15-16"
                     format = percent7.1,
-            (sum(WHITE)/(select (sum(TOTAL_sum)) 
-                from grad1516_means_sorted)) 
+            (sum(WHITE)/(select (sum(TOTAL_sum))
+                from grad1516_means_sorted))
                 as white_grad_per_1516
-                label = "White Grad % 15-16" 
+                label = "White Grad % 15-16"
                     format = percent7.1
     from
         grad1516_final
-    ;    
+    ;
 quit;
 data african_white_grad_1416;
     merge
@@ -1567,25 +1567,25 @@ quit;
 *
 By using proc sql, i created a new table called E12B_1415 to contain the
 total number of Grade 12 boys enrolled in the year 2014-2015.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+the total number of boy by using the sum formula from the dataset
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year
 is 1415.
 ;
 proc sql;
     create table E7_12B_1415 as
         select
-            sum(E7) as toteg7_1415 
+            sum(E7) as toteg7_1415
                 label = "Total Number of Grade 7 Boy Enrolled in 2014-2015",
-            sum(E8) as toteg8_1415 
+            sum(E8) as toteg8_1415
                 label = "Total Number of Grade 8 Boy Enrolled in 2014-2015",
-            sum(E9) as toteg9_1415 
-                label = "Total Number of Grade 9 Boy Enrolled in 2014-2015",    
-            sum(E10) as toteg10_1415 
+            sum(E9) as toteg9_1415
+                label = "Total Number of Grade 9 Boy Enrolled in 2014-2015",
+            sum(E10) as toteg10_1415
                 label = "Total Number of Grade 10 Boy Enrolled in 2014-2015",
-            sum(E11) as toteg11_1415 
-                label = "Total Number of Grade 11 Boy Enrolled in 2014-2015",    
-            sum(E12) as toteg12_1415 
-                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"    
+            sum(E11) as toteg11_1415
+                label = "Total Number of Grade 11 Boy Enrolled in 2014-2015",
+            sum(E12) as toteg12_1415
+                label = "Total Number of Grade 12 Boy Enrolled in 2014-2015"
         from
             grad_drop_merged_sorted
         where
@@ -1597,29 +1597,29 @@ quit;
 *
 By using proc sql, i created a new table called E12B_1516 to contain the
 total number of Grade 12 boys enrolled in the year 2015-2016.  I calculated
-the total number of boy by using the sum formula from the dataset 
-GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year 
+the total number of boy by using the sum formula from the dataset
+GRAD_DROP_MERGED_SORTED and set a condition where Gender is M and the year
 is 1516.
 ;
 proc sql;
     create table E7_12B_1516 as
-        select 
-            sum(E7) as toteg7_1516 
+        select
+            sum(E7) as toteg7_1516
                 label = "Total Number of Grade 7 Boy Enrolled in 2015-2016",
-            sum(E8) as toteg8_1516 
-                label = "Total Number of Grade 8 Boy Enrolled in 2015-2016",  
-            sum(E9) as toteg9_1516 
-                label = "Total Number of Grade 9 Boy Enrolled in 2015-2016", 
-            sum(E10) as toteg10_1516 
-                label = "Total Number of Grade 10 Boy Enrolled in 2015-2016", 
-            sum(E11) as toteg11_1516 
-                label = "Total Number of Grade 11 Boy Enrolled in 2015-2016", 
-            sum(E12) as toteg12_1516 
-                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"     
-        from 
+            sum(E8) as toteg8_1516
+                label = "Total Number of Grade 8 Boy Enrolled in 2015-2016",
+            sum(E9) as toteg9_1516
+                label = "Total Number of Grade 9 Boy Enrolled in 2015-2016",
+            sum(E10) as toteg10_1516
+                label = "Total Number of Grade 10 Boy Enrolled in 2015-2016",
+            sum(E11) as toteg11_1516
+                label = "Total Number of Grade 11 Boy Enrolled in 2015-2016",
+            sum(E12) as toteg12_1516
+                label = "Total Number of Grade 12 Boy Enrolled in 2015-2016"
+        from
             grad_drop_merged_sorted
-        where 
-            GENDER = 'M' and 
+        where
+            GENDER = 'M' and
             YEAR = 1516
         ;
 quit;
@@ -1634,31 +1634,31 @@ to be 2 decimal places.
 proc sql;
     create table WH_g7_12dechange as
     select
-        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415) 
-            as E7B_change 
-            label = "%Change of Grade 7 Boys' Enrollment from 2014-2016" 
+        (((select toteg7_1516 From E7_12B_1516)-toteg7_1415)/toteg7_1415)
+            as E7B_change
+            label = "% Change of Grade 7 Boys' Enrollment from 2014-2016"
                 format=percent7.2,
-        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415) 
-            as E8B_change 
-            label = "%Change of Grade 8 Boys' Enrollment from 2014-2016" 
+        (((select toteg8_1516 From E7_12B_1516)-toteg8_1415)/toteg8_1415)
+            as E8B_change
+            label = "% Change of Grade 8 Boys' Enrollment from 2014-2016"
                 format=percent7.2,
-        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415) 
-            as E9B_change 
-            label = "%Change of Grade 9 Boys' Enrollment from 2014-2016" 
+        (((select toteg9_1516 From E7_12B_1516)-toteg9_1415)/toteg9_1415)
+            as E9B_change
+            label = "% Change of Grade 9 Boys' Enrollment from 2014-2016"
                 format=percent7.2,
-        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415) 
-            as E10B_change 
-            label = "%Change of Grade 10 Boys' Enrollment from 2014-2016" 
+        (((select toteg10_1516 From E7_12B_1516)-toteg10_1415)/toteg10_1415)
+            as E10B_change
+            label = "% Change of Grade 10 Boys' Enrollment from 2014-2016"
                 format=percent7.2,
         (((select toteg11_1516 From E7_12B_1516)-toteg11_1415)/toteg11_1415)
-            as E11B_change 
-            label = "%Change of Grade 11 Boys' Enrollment from 2014-2016" 
+            as E11B_change
+            label = "% Change of Grade 11 Boys' Enrollment from 2014-2016"
                 format=percent7.2,
         (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415)
-            as E12B_change 
-            label = "%Change of Grade 12 Boys' Enrollment from 2014-2016" 
-                format=percent7.2        
-    from 
+            as E12B_change
+            label = "% Change of Grade 12 Boys' Enrollment from 2014-2016" 
+                format=percent7.2
+    from
         E7_12B_1415;
 quit;
 *End data steps for WH analysis file;
