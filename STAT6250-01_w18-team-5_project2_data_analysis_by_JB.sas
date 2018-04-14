@@ -199,11 +199,11 @@ ods graphics on / height=8in;
 proc sgplot data=JB2_final dattrmap=JB2_map;
     hbarparm category=County response=Grad_Percent /
         group=Ethnic_group grouporder=data groupdisplay=stack
-        discreteoffset=-0.17 barwidth=.3 attrid=eth dataskin=pressed;
+        discreteoffset=-0.17 barwidth=.3 attrid=eth;
         /* order by counts of 1st bar */
     hbarparm category=County response=Drop_Percent /
         group=Ethnic_group grouporder=data groupdisplay=stack
-        discreteoffset=0.17 barwidth=.3 attrid=eth dataskin=pressed;
+        discreteoffset=0.17 barwidth=.3 attrid=eth;
         /* order by counts of 2nd bar */
     yaxis discreteorder=data label="County";
     xaxis grid values=(0 to 100 by 10) label="Percentage of Total with Group";
@@ -264,7 +264,7 @@ see the total number of students who dropped out in AY2015-2016 for each county
 and for each grade level
 ;
 proc sgplot data=JB3_final;
-    hbarparm category=County response=Count / dataskin=pressed
+    hbarparm category=County response=Count / 
         group=Grade groupdisplay=cluster;
     xaxis grid offsetmin=0.1 label='2015-2016 Dropouts by County by Grade';
     x2axis offsetmax=0.95 display=(nolabel) valueattrs=(size=6);

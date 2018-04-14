@@ -912,15 +912,15 @@ data JB2_map;
     input id $ value $ fillcolor $;
     infile datalines delimiter='|';
     datalines;
-        eth|Not Reported|cx607d8b
-        eth|Native American|cx8bc34a
-        eth|Asian|cx009688
-        eth|Pacific Islander|cxff5722
-        eth|Filipino|cx673ab7
-        eth|Hispanic|cxffc107
-        eth|African American|cx3f51b5
-        eth|White|cx00bcd4
-        eth|Two or More Races|cx795548
+        eth|Not Reported|cxf3ffff
+        eth|Native American|cxd4e8e9
+        eth|Asian|cxb6d1d5
+        eth|Pacific Islander|cx98bac2
+        eth|Filipino|cx7ca3b0
+        eth|Hispanic|cx608d9e
+        eth|African American|cx45778d
+        eth|White|cx29617d
+        eth|Two or More Races|cx004c6d
 ;
 run;
 
@@ -1656,7 +1656,7 @@ proc sql;
                 format=percent7.2,
         (((select toteg12_1516 From E7_12B_1516)-toteg12_1415)/toteg12_1415)
             as E12B_change
-            label = "% Change of Grade 12 Boys' Enrollment from 2014-2016" 
+            label = "% Change of Grade 12 Boys' Enrollment from 2014-2016"
                 format=percent7.2
     from
         E7_12B_1415;
